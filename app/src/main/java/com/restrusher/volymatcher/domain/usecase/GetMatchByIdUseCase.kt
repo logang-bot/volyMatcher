@@ -1,0 +1,8 @@
+package com.restrusher.volymatcher.domain.usecase
+
+import com.restrusher.volymatcher.domain.model.Match
+import com.restrusher.volymatcher.domain.repository.MatchRepository
+
+class GetMatchByIdUseCase(private val repository: MatchRepository) {
+    operator fun invoke(id: String): Match? = repository.getById(id)
+}
