@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VolyMatcher</string>
+
+    <!-- ── Navigation ─────────────────────────────────────────────── -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_matches">Partidos</string>
+    <string name="nav_balance">Equilibrio</string>
+    <string name="nav_players">Jugadores</string>
+    <string name="nav_stats">Estadísticas</string>
+
+    <!-- ── Common actions ─────────────────────────────────────────── -->
+    <string name="action_back">Atrás</string>
+    <string name="action_see_all">Ver todos</string>
+    <string name="action_manage">Gestionar</string>
+    <string name="action_edit">Editar</string>
+
+    <!-- ── Shared stat labels ─────────────────────────────────────── -->
+    <string name="stat_height">ALTURA</string>
+    <string name="stat_weight">PESO</string>
+    <string name="stat_reach">ALCANCE</string>
+    <string name="stat_jump">SALTO</string>
+    <string name="stat_speed">VELOCIDAD</string>
+    <string name="stat_skill">HABILIDAD</string>
+    <string name="stat_wingspan">ENVERGADURA</string>
+    <string name="stat_vert_jump">SALTO VERT.</string>
+    <string name="stat_body_comp">COMP. CORPORAL</string>
+    <string name="stat_hand">MANO</string>
+    <string name="stat_stamina">RESISTENCIA</string>
+    <string name="stat_speed_idx">ÍND. VELOCIDAD</string>
+
+    <!-- ── Home screen ────────────────────────────────────────────── -->
+    <string name="home_greeting">¡Hola, Entrenador.</string>
+    <string name="home_greeting_sub">A jugar un partido.</string>
+    <string name="home_up_next">A continuación · Esta noche 7:30</string>
+    <string name="home_action_balance_teams">Equilibrar equipos</string>
+    <string name="home_action_roster">Plantilla</string>
+    <string name="home_section_recent_matches">Partidos recientes</string>
+    <string name="home_section_your_squad">Tu equipo · %d jugadores</string>
+    <string name="home_squad_player_count">%d jugadores</string>
+    <string name="home_quick_auto_balance">Auto-equilibrar</string>
+    <string name="home_quick_auto_balance_sub">elige jugadores, nosotros los dividimos</string>
+    <string name="home_quick_new_match">Nuevo partido</string>
+    <string name="home_quick_new_match_sub">oficial o batalla campal</string>
+    <string name="home_quick_scan_player">Escanear jugador</string>
+    <string name="home_quick_scan_player_sub">medir en 30s</string>
+    <string name="home_quick_invite_friends">Invitar amigos</string>
+    <string name="home_quick_invite_friends_sub">comparte tu equipo</string>
+
+    <!-- ── Players screen ─────────────────────────────────────────── -->
+    <string name="players_title">Jugadores</string>
+    <string name="players_empty_subtitle">Sin jugadores aún</string>
+    <string name="players_count_subtitle">%d en tu equipo</string>
+    <string name="players_search_hint">Buscar en tu equipo…</string>
+    <string name="players_mvp_banner">%s es tu MVP</string>
+
+    <!-- ── Matches screen ─────────────────────────────────────────── -->
+    <string name="matches_title">Partidos</string>
+    <string name="matches_stat_matches">partidos</string>
+    <string name="matches_stat_completed">completados</string>
+    <string name="matches_stat_avg_balance">equilibrio prom.</string>
+    <string name="matches_filter_all_label">Todos los partidos</string>
+    <string name="matches_games_count">%d JUEGOS</string>
+    <string name="matches_empty">Sin partidos aún. Toca ＋ para crear uno.</string>
+    <string name="matches_winner_label">GANADOR</string>
+    <string name="matches_official_pill">Oficial</string>
+
+    <!-- ── Match detail screen ────────────────────────────────────── -->
+    <string name="match_detail_not_found">Partido no encontrado</string>
+    <string name="match_detail_live_pill">● EN VIVO</string>
+    <string name="match_detail_on_court">En cancha</string>
+    <string name="match_detail_sub">Suplir</string>
+    <string name="match_detail_vs">vs</string>
+
+    <!-- ── Create match screen ────────────────────────────────────── -->
+    <string name="create_match_step">PASO 1 / 3</string>
+    <string name="create_match_title">Nuevo partido.\n¿Cuál es el ambiente?</string>
+    <string name="create_match_format_label">FORMATO</string>
+    <string name="create_match_format_official">Oficial</string>
+    <string name="create_match_format_official_sub">Dos equipos cara a cara</string>
+    <string name="create_match_format_br">Batalla Campal</string>
+    <string name="create_match_format_br_sub">3+ equipos, rotan</string>
+    <string name="create_match_br_style_label">ESTILO BR</string>
+    <string name="create_match_br_king">Rey de la cancha</string>
+    <string name="create_match_br_king_sub">El ganador se queda, los perdedores rotan</string>
+    <string name="create_match_br_round_robin">Todos contra todos</string>
+    <string name="create_match_br_round_robin_sub">Todos los equipos juegan entre sí, los puntos deciden</string>
+    <string name="create_match_br_bracket">Eliminación directa</string>
+    <string name="create_match_br_bracket_sub">Cuadro de eliminación simple</string>
+    <string name="create_match_sport_label">DEPORTE</string>
+    <string name="create_match_sport_volleyball">🏐 Voleibol</string>
+    <string name="create_match_sport_soccer">⚽ Fútbol</string>
+    <string name="create_match_sport_basketball">🏀 Baloncesto</string>
+    <string name="create_match_sport_other">+ Otro</string>
+    <string name="create_match_players_per_team">JUGADORES POR EQUIPO</string>
+    <string name="create_match_next">Siguiente · Elegir jugadores</string>
+
+    <!-- ── Teams screen ───────────────────────────────────────────── -->
+    <string name="teams_title">Equipos</string>
+    <string name="teams_header_count">%1$d equipos · %2$d jugadores en total</string>
+    <string name="teams_tab_permanent">Permanente</string>
+    <string name="teams_tab_pickup">Pickup</string>
+    <string name="teams_empty">Sin equipos aún. Toca ＋ para crear uno.</string>
+    <string name="teams_card_players_ovr">%1$d JUGADORES · OVR %2$d</string>
+
+    <!-- ── Team detail screen ─────────────────────────────────────── -->
+    <string name="team_detail_not_found">Equipo no encontrado</string>
+    <string name="team_detail_stat_wins">victorias</string>
+    <string name="team_detail_stat_losses">derrotas</string>
+    <string name="team_detail_stat_overall">general</string>
+    <string name="team_detail_stat_set_diff">dif. sets</string>
+    <string name="team_detail_profile_section">Perfil del equipo</string>
+    <string name="team_detail_avg_label">PROM. DE %d JUGADORES</string>
+    <string name="team_detail_section_roster">Plantilla</string>
+    <string name="team_detail_section_last5">Últimos 5</string>
+    <string name="team_detail_empty_results">Sin resultados aún</string>
+
+    <!-- ── Auto-balance screen ────────────────────────────────────── -->
+    <string name="balance_header">EQUILIBRIO</string>
+    <string name="balance_header_with_size">EQUILIBRIO · %1$dv%2$d</string>
+    <string name="balance_title">Equilibrado.</string>
+    <string name="balance_subtitle">Dos equipos justos, según tus pesos.</string>
+    <string name="balance_team_a">Equipo A</string>
+    <string name="balance_team_b">Equipo B</string>
+    <string name="balance_delta_ovr">OVR %d</string>
+    <string name="balance_delta_reach">ALCANCE %s</string>
+    <string name="balance_delta_jump">SALTO %s</string>
+    <string name="balance_fair">● JUSTO</string>
+    <string name="balance_section_weights">¿Qué importa?</string>
+    <string name="balance_auto_label">AUTO</string>
+    <string name="balance_weight_skill">Habilidad</string>
+    <string name="balance_weight_height_reach">Altura y alcance</string>
+    <string name="balance_weight_jump">Salto</string>
+    <string name="balance_weight_speed">Velocidad</string>
+    <string name="balance_weight_role">Cobertura de roles</string>
+    <string name="balance_hard_rules">Reglas fijas</string>
+    <string name="balance_rule_split_scanned">Dividir escaneados</string>
+    <string name="balance_rule_keep_friends">Mantener amigos</string>
+    <string name="balance_section_draft">Orden de draft</string>
+    <string name="balance_draft_snake_label">SERPIENTE · %d JUGADORES</string>
+    <string name="balance_draft_remaining">+ %d más</string>
+    <string name="balance_action_lock">Confirmar</string>
+    <string name="balance_action_reroll">⇄ Repetir</string>
+
+    <!-- ── Stats screen ───────────────────────────────────────────── -->
+    <string name="stats_title">Clasificación</string>
+    <string name="stats_top_squad">LO MEJOR DEL EQUIPO</string>
+    <string name="stats_section_teams">Equipos</string>
+
+    <!-- ── Body scan screen ───────────────────────────────────────── -->
+    <string name="scan_step">ESCANEO · PASO 2/3</string>
+    <string name="scan_instruction">%s · quédate quieto</string>
+    <string name="scan_position">BRAZOS EXTENDIDOS · 2M DE LA CÁMARA</string>
+    <string name="scan_capturing">● CAPTURANDO</string>
+    <string name="scan_progress_label">ESCANEANDO</string>
+    <string name="scan_stats_label">CAPTURANDO</string>
+    <string name="scan_scanning_value">escaneando</string>
+    <string name="scan_hold_steady">No te muevas…</string>
+
+    <!-- ── Player profile screen ──────────────────────────────────── -->
+    <string name="profile_title">PERFIL</string>
+    <string name="profile_scanned_pill">Escaneado</string>
+    <string name="profile_section_body_scan">Escaneo corporal</string>
+    <string name="profile_action_rescan">Re-escanear</string>
+    <string name="profile_last_scanned">ÚLTIMO ESCANEO · HACE 4 DÍAS</string>
+    <string name="profile_unit_cm">cm</string>
+    <string name="profile_unit_kg">kg</string>
+    <string name="profile_unit_fat">&#37; grasa</string>
+    <string name="profile_unit_per100">/100</string>
+    <string name="profile_section_performance">Rendimiento</string>
+    <string name="profile_section_last5">Últimos 5 partidos</string>
+    <string name="profile_result_mvp">MVP</string>
+    <string name="profile_result_win">W</string>
+</resources>

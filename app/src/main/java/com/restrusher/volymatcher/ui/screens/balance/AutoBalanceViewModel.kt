@@ -30,11 +30,13 @@ class AutoBalanceViewModel(
     val uiState: StateFlow<AutoBalanceUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch { reBalance() }
+        reBalance()
     }
 
     fun reBalance() {
-        _uiState.update { it.copy(balancedTeams = getBalancedTeamsUseCase()) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(balancedTeams = getBalancedTeamsUseCase()) }
+        }
     }
 
     companion object {

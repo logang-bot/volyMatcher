@@ -35,7 +35,7 @@ class MatchDetailViewModel(
         viewModelScope.launch { loadData() }
     }
 
-    private fun loadData() {
+    private suspend fun loadData() {
         val match = getMatchByIdUseCase(matchId)
         val players = getPlayersUseCase()
         _uiState.update {

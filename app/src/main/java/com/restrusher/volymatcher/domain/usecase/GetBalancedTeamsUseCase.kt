@@ -5,7 +5,7 @@ import com.restrusher.volymatcher.domain.repository.PlayerRepository
 import kotlin.math.abs
 
 class GetBalancedTeamsUseCase(private val repository: PlayerRepository) {
-    operator fun invoke(): BalancedTeams {
+    suspend operator fun invoke(): BalancedTeams {
         val sorted = repository.getAll().sortedByDescending { it.skill }
         // Snake draft: even-index picks go to A, odd to B — produces balanced skill totals
         val teamA = sorted.filterIndexed { i, _ -> i % 2 == 0 }

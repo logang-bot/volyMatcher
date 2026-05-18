@@ -29,16 +29,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.restrusher.volymatcher.domain.model.MatchFormat
 import com.restrusher.volymatcher.ui.components.Chip
 import com.restrusher.volymatcher.ui.components.InkButton
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun CreateMatchScreen(
@@ -47,6 +51,25 @@ fun CreateMatchScreen(
     viewModel: CreateMatchViewModel = viewModel(factory = CreateMatchViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    CreateMatchContent(
+        uiState = uiState,
+        modifier = modifier,
+        onBack = onBack,
+        onFormat = { viewModel.setFormat(it) },
+        onBrStyle = { viewModel.setBrStyle(it) },
+        onSport = { viewModel.setSport(it) },
+    )
+}
+
+@Composable
+private fun CreateMatchContent(
+    uiState: CreateMatchUiState,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    onFormat: (MatchFormat) -> Unit = {},
+    onBrStyle: (String) -> Unit = {},
+    onSport: (String) -> Unit = {},
+) {
 
     LazyColumn(
         modifier = modifier
@@ -75,7 +98,7 @@ fun CreateMatchScreen(
                     }
                 }
                 Text(
-                    text = "STEP 1 / 3",
+                    text = stringResource(R.string.create_match_step),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -85,7 +108,7 @@ fun CreateMatchScreen(
 
         item {
             Text(
-                text = "New match.\nWhat's the vibe?",
+                text = stringResource(R.string.create_match_title),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -95,7 +118,7 @@ fun CreateMatchScreen(
 
         item {
             Text(
-                text = "FORMAT",
+                text = stringResource(R.string.create_match_format_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -108,17 +131,17 @@ fun CreateMatchScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 FormatCard(
-                    title = "Official",
-                    subtitle = "Two teams head-to-head",
+                    title = stringResource(R.string.create_match_format_official),
+                    subtitle = stringResource(R.string.create_match_format_official_sub),
                     selected = uiState.selectedFormat == MatchFormat.Official,
-                    onClick = { viewModel.setFormat(MatchFormat.Official) },
+                    onClick = { onFormat(MatchFormat.Official) },
                     modifier = Modifier.weight(1f),
                 )
                 FormatCard(
-                    title = "Battle Royale",
-                    subtitle = "3+ teams, rotate in",
+                    title = stringResource(R.string.create_match_format_br),
+                    subtitle = stringResource(R.string.create_match_format_br_sub),
                     selected = uiState.selectedFormat == MatchFormat.BattleRoyale,
-                    onClick = { viewModel.setFormat(MatchFormat.BattleRoyale) },
+                    onClick = { onFormat(MatchFormat.BattleRoyale) },
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -128,7 +151,7 @@ fun CreateMatchScreen(
         if (uiState.selectedFormat == MatchFormat.BattleRoyale) {
             item {
                 Text(
-                    text = "BR STYLE",
+                    text = stringResource(R.string.create_match_br_style_label),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 20.dp),
@@ -138,16 +161,17 @@ fun CreateMatchScreen(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    listOf(
-                        "King of the court" to "Winner stays, losers rotate",
-                        "Round robin" to "All teams play each other, points decide",
-                        "Bracket elim" to "Single knockout tree",
-                    ).forEach { (title, sub) ->
+                    val brStyles = listOf(
+                        Triple("King of the court", R.string.create_match_br_king, R.string.create_match_br_king_sub),
+                        Triple("Round robin", R.string.create_match_br_round_robin, R.string.create_match_br_round_robin_sub),
+                        Triple("Bracket elim", R.string.create_match_br_bracket, R.string.create_match_br_bracket_sub),
+                    )
+                    brStyles.forEach { (key, titleRes, subRes) ->
                         BRStyleRow(
-                            title = title,
-                            subtitle = sub,
-                            selected = uiState.selectedBrStyle == title,
-                            onClick = { viewModel.setBrStyle(title) },
+                            title = stringResource(titleRes),
+                            subtitle = stringResource(subRes),
+                            selected = uiState.selectedBrStyle == key,
+                            onClick = { onBrStyle(key) },
                         )
                     }
                 }
@@ -157,7 +181,7 @@ fun CreateMatchScreen(
 
         item {
             Text(
-                text = "SPORT",
+                text = stringResource(R.string.create_match_sport_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -169,12 +193,17 @@ fun CreateMatchScreen(
                     .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                listOf("🏐 Volleyball", "⚽ Soccer", "🏀 Basketball", "+ Other").forEach { sport ->
-                    val sportName = sport.replace(Regex("^[^a-zA-Z]+"), "").trim()
+                val sportOptions = listOf(
+                    "Volleyball" to R.string.create_match_sport_volleyball,
+                    "Soccer" to R.string.create_match_sport_soccer,
+                    "Basketball" to R.string.create_match_sport_basketball,
+                    "Other" to R.string.create_match_sport_other,
+                )
+                sportOptions.forEach { (key, labelRes) ->
                     Chip(
-                        label = sport,
-                        active = uiState.selectedSport == sportName || sport == uiState.selectedSport,
-                        onClick = { viewModel.setSport(sportName) },
+                        label = stringResource(labelRes),
+                        active = uiState.selectedSport == key,
+                        onClick = { onSport(key) },
                     )
                 }
             }
@@ -190,7 +219,7 @@ fun CreateMatchScreen(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
-                    text = "PLAYERS PER TEAM",
+                    text = stringResource(R.string.create_match_players_per_team),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -236,7 +265,7 @@ fun CreateMatchScreen(
 
         item {
             Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                InkButton(text = "Next · Pick players")
+                InkButton(text = stringResource(R.string.create_match_next))
             }
         }
     }
@@ -321,5 +350,21 @@ private fun BRStyleRow(
             Text(text = title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground)
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Create Match — Official")
+@Composable
+private fun CreateMatchOfficialPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        CreateMatchContent(uiState = CreateMatchUiState(selectedFormat = MatchFormat.Official))
+    }
+}
+
+@Preview(showBackground = true, name = "Create Match — Battle Royale")
+@Composable
+private fun CreateMatchBRPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        CreateMatchContent(uiState = CreateMatchUiState(selectedFormat = MatchFormat.BattleRoyale))
     }
 }

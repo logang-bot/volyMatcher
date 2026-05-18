@@ -3,6 +3,6 @@ package com.restrusher.volymatcher.domain.repository
 import com.restrusher.volymatcher.domain.model.Match
 
 interface MatchRepository {
-    fun getAll(): List<Match>
-    fun getById(id: String): Match?
+    suspend fun getAll(): List<Match>
+    suspend fun getById(id: String): Match?
 }

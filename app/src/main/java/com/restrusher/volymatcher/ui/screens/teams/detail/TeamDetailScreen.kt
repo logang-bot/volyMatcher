@@ -27,19 +27,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Player
+import com.restrusher.volymatcher.domain.model.Team
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.SectionHeader
 import com.restrusher.volymatcher.ui.components.StatBar
 import com.restrusher.volymatcher.ui.components.TeamCrest
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun TeamDetailScreen(
@@ -50,9 +56,40 @@ fun TeamDetailScreen(
     viewModel: TeamDetailViewModel = viewModel(factory = TeamDetailViewModel.factory(teamId)),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val team = uiState.team ?: return
+    TeamDetailContent(
+        team = uiState.team,
+        modifier = modifier,
+        onBack = onBack,
+        onPlayerClick = onPlayerClick,
+    )
+}
+
+@Composable
+private fun TeamDetailContent(
+    team: Team?,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    onPlayerClick: (String) -> Unit = {},
+) {
+    if (team == null) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.team_detail_not_found), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        return
+    }
     val teamColor = Color(team.colorLong)
     val accentColor = MaterialTheme.colorScheme.primary
+    val avgHeight = if (team.players.isEmpty()) 0 else team.players.sumOf { it.height } / team.players.size
+    val avgReach = if (team.players.isEmpty()) 0 else team.players.sumOf { it.reach } / team.players.size
+    val avgJump = if (team.players.isEmpty()) 0 else team.players.sumOf { it.jump } / team.players.size
+    val avgSpeed = if (team.players.isEmpty()) 0 else team.players.sumOf { it.speed } / team.players.size
+    val avgSkill = if (team.players.isEmpty()) 0 else team.players.sumOf { it.skill } / team.players.size
+    val setDiffLabel = if (team.setDiff >= 0) "+${team.setDiff}" else "${team.setDiff}"
+    val subtitle = buildString {
+        if (team.createdAt.isNotEmpty()) append(team.createdAt.uppercase())
+        if (team.createdAt.isNotEmpty() && team.sport.isNotEmpty()) append(" · ")
+        if (team.sport.isNotEmpty()) append(team.sport.uppercase())
+    }
 
     LazyColumn(
         modifier = modifier
@@ -106,11 +143,13 @@ fun TeamDetailScreen(
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
-                Text(
-                    text = "EST. JAN 2025 · VOLLEYBALL",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (subtitle.isNotEmpty()) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -129,13 +168,13 @@ fun TeamDetailScreen(
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                         .fillMaxWidth(),
                 ) {
-                    BigStat("${team.wins}", "wins", modifier = Modifier.weight(1f), isAccent = true)
+                    BigStat("${team.wins}", stringResource(R.string.team_detail_stat_wins), modifier = Modifier.weight(1f), isAccent = true)
                     Box(modifier = Modifier.width(1.dp).height(70.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                    BigStat("${team.losses}", "losses", modifier = Modifier.weight(1f))
+                    BigStat("${team.losses}", stringResource(R.string.team_detail_stat_losses), modifier = Modifier.weight(1f))
                     Box(modifier = Modifier.width(1.dp).height(70.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                    BigStat("${team.overallRating}", "overall", modifier = Modifier.weight(1f))
+                    BigStat("${team.overallRating}", stringResource(R.string.team_detail_stat_overall), modifier = Modifier.weight(1f))
                     Box(modifier = Modifier.width(1.dp).height(70.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                    BigStat("+21", "set diff", modifier = Modifier.weight(1f))
+                    BigStat(setDiffLabel, stringResource(R.string.team_detail_stat_set_diff), modifier = Modifier.weight(1f))
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -161,21 +200,21 @@ fun TeamDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom,
                     ) {
-                        Text("Team profile", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
-                        Text("AVG OF ${team.players.size} PLAYERS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.team_detail_profile_section), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+                        Text(stringResource(R.string.team_detail_avg_label, team.players.size), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    StatBar("HEIGHT", 181, 200, barColor = accentColor)
-                    StatBar("REACH", 234, 260, barColor = accentColor)
-                    StatBar("JUMP", 59, 75)
-                    StatBar("SPEED", 82, 100)
-                    StatBar("SKILL", 78, 100, barColor = accentColor)
+                    StatBar(stringResource(R.string.stat_height), avgHeight, 220, barColor = accentColor)
+                    StatBar(stringResource(R.string.stat_reach), avgReach, 270, barColor = accentColor)
+                    StatBar(stringResource(R.string.stat_jump), avgJump, 75)
+                    StatBar(stringResource(R.string.stat_speed), avgSpeed, 100)
+                    StatBar(stringResource(R.string.stat_skill), avgSkill, 100, barColor = accentColor)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
 
         item {
-            SectionHeader(title = "Roster", action = "Edit")
+            SectionHeader(title = stringResource(R.string.team_detail_section_roster), action = stringResource(R.string.action_edit))
             Spacer(modifier = Modifier.height(12.dp))
         }
 
@@ -192,35 +231,60 @@ fun TeamDetailScreen(
         item { Spacer(modifier = Modifier.height(16.dp)) }
 
         item {
-            SectionHeader(title = "Last 5")
+            SectionHeader(title = stringResource(R.string.team_detail_section_last5))
             Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                listOf("W", "W", "L", "W", "W").forEach { result ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                if (result == "W") MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.outlineVariant
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = result,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = if (result == "W") Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+            if (team.recentResults.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.team_detail_empty_results),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+            } else {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    team.recentResults.take(5).forEach { result ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (result == "W") MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outlineVariant
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = result,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = if (result == "W") Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Team Detail — Light")
+@Composable
+private fun TeamDetailLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        TeamDetailContent(team = SampleDataSource.teams().first())
+    }
+}
+
+@Preview(showBackground = true, name = "Team Detail — Empty")
+@Composable
+private fun TeamDetailEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        TeamDetailContent(team = null)
     }
 }
 

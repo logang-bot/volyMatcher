@@ -25,21 +25,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Match
 import com.restrusher.volymatcher.domain.model.MatchFormat
 import com.restrusher.volymatcher.ui.components.Chip
 import com.restrusher.volymatcher.ui.components.Pill
 import com.restrusher.volymatcher.ui.components.PillTone
 import com.restrusher.volymatcher.ui.components.SportGlyph
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun MatchesScreen(
@@ -49,6 +54,26 @@ fun MatchesScreen(
     viewModel: MatchesViewModel = viewModel(factory = MatchesViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MatchesContent(
+        uiState = uiState,
+        modifier = modifier,
+        onMatchClick = onMatchClick,
+        onCreateMatch = onCreateMatch,
+        onFilter = { viewModel.setFilter(it) },
+    )
+}
+
+@Composable
+private fun MatchesContent(
+    uiState: MatchesUiState,
+    modifier: Modifier = Modifier,
+    onMatchClick: (String) -> Unit = {},
+    onCreateMatch: () -> Unit = {},
+    onFilter: (String) -> Unit = {},
+) {
+    val totalMatches = uiState.allMatches.size
+    val avgBalance = if (uiState.allMatches.isEmpty()) 0
+    else uiState.allMatches.sumOf { it.balance } / uiState.allMatches.size
 
     LazyColumn(
         modifier = modifier
@@ -64,7 +89,7 @@ fun MatchesScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Matches", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.matches_title), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(
                         modifier = Modifier.size(36.dp).clip(CircleShape)
@@ -88,7 +113,7 @@ fun MatchesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 uiState.filters.forEach { label ->
-                    Chip(label = label, active = uiState.activeFilter == label, onClick = { viewModel.setFilter(label) })
+                    Chip(label = label, active = uiState.activeFilter == label, onClick = { onFilter(label) })
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -104,11 +129,11 @@ fun MatchesScreen(
                 Row(
                     modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp)).fillMaxWidth(),
                 ) {
-                    MiniStat("24", "matches", modifier = Modifier.weight(1f))
+                    MiniStat("$totalMatches", stringResource(R.string.matches_stat_matches), modifier = Modifier.weight(1f))
                     Box(modifier = Modifier.width(1.dp).height(56.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                    MiniStat("17", "wins", isAccent = true, modifier = Modifier.weight(1f))
+                    MiniStat("${uiState.allMatches.count { it.status == "Final" }}", stringResource(R.string.matches_stat_completed), isAccent = true, modifier = Modifier.weight(1f))
                     Box(modifier = Modifier.width(1.dp).height(56.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                    MiniStat("92%", "avg balance", modifier = Modifier.weight(1f))
+                    MiniStat("$avgBalance%", stringResource(R.string.matches_stat_avg_balance), modifier = Modifier.weight(1f))
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -120,16 +145,53 @@ fun MatchesScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom,
             ) {
-                Text("April", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("${uiState.filteredMatches.size} GAMES", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                Text(
+                    text = if (uiState.activeFilter == "All") stringResource(R.string.matches_filter_all_label) else uiState.activeFilter,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(stringResource(R.string.matches_games_count, uiState.filteredMatches.size), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
 
-        items(uiState.filteredMatches, key = { it.id }) { match ->
-            MatchListCard(match = match, modifier = Modifier.padding(horizontal = 20.dp), onClick = { onMatchClick(match.id) })
-            Spacer(modifier = Modifier.height(10.dp))
+        if (uiState.filteredMatches.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 40.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.matches_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        } else {
+            items(uiState.filteredMatches, key = { it.id }) { match ->
+                MatchListCard(match = match, modifier = Modifier.padding(horizontal = 20.dp), onClick = { onMatchClick(match.id) })
+                Spacer(modifier = Modifier.height(10.dp))
+            }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Matches — Light")
+@Composable
+private fun MatchesLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        MatchesContent(uiState = MatchesUiState(allMatches = SampleDataSource.matches))
+    }
+}
+
+@Preview(showBackground = true, name = "Matches — Empty")
+@Composable
+private fun MatchesEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        MatchesContent(uiState = MatchesUiState())
     }
 }
 
@@ -164,7 +226,7 @@ private fun MatchListCard(match: Match, modifier: Modifier = Modifier, onClick: 
                     modifier = Modifier.weight(1f),
                 )
                 if (isBR) Pill(text = "BR · ${match.teamCount}", tone = PillTone.Accent)
-                else Pill(text = "Official", tone = PillTone.Outline)
+                else Pill(text = stringResource(R.string.matches_official_pill), tone = PillTone.Outline)
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = match.title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
@@ -179,7 +241,7 @@ private fun MatchListCard(match: Match, modifier: Modifier = Modifier, onClick: 
                         Text("🏆", style = MaterialTheme.typography.labelMedium)
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("WINNER", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.matches_winner_label), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(match.winner ?: "", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground)
                     }
                     Text("${match.teamCount} teams", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -8,6 +8,18 @@ data class BalancedTeams(
     val ovrA: Int get() = if (teamA.isEmpty()) 0 else teamA.sumOf { it.skill } / teamA.size
     val ovrB: Int get() = if (teamB.isEmpty()) 0 else teamB.sumOf { it.skill } / teamB.size
 
+    val reachDelta: Int get() {
+        val avgA = if (teamA.isEmpty()) 0 else teamA.sumOf { it.reach } / teamA.size
+        val avgB = if (teamB.isEmpty()) 0 else teamB.sumOf { it.reach } / teamB.size
+        return avgA - avgB
+    }
+
+    val jumpDelta: Int get() {
+        val avgA = if (teamA.isEmpty()) 0 else teamA.sumOf { it.jump } / teamA.size
+        val avgB = if (teamB.isEmpty()) 0 else teamB.sumOf { it.jump } / teamB.size
+        return avgA - avgB
+    }
+
     /** Snake-draft order: pick 1 goes to A, 2 to B, 3 to B, 4 to A, … */
     val draftOrder: List<Pair<String, Player>> by lazy {
         val allSorted = (teamA + teamB).sortedByDescending { it.skill }

@@ -34,7 +34,7 @@ class PlayerProfileViewModel(
         viewModelScope.launch { loadData() }
     }
 
-    private fun loadData() {
+    private suspend fun loadData() {
         _uiState.update {
             it.copy(
                 player = getPlayerByIdUseCase(playerId),

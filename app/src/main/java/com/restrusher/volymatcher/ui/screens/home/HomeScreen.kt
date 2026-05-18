@@ -25,22 +25,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Player
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.MatchMiniCard
 import com.restrusher.volymatcher.ui.components.Pill
 import com.restrusher.volymatcher.ui.components.PillTone
 import com.restrusher.volymatcher.ui.components.PrimaryButton
 import com.restrusher.volymatcher.ui.components.SectionHeader
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun HomeScreen(
@@ -52,9 +59,30 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeContent(
+        uiState = uiState,
+        modifier = modifier,
+        onNavigateToMatches = onNavigateToMatches,
+        onNavigateToTeams = onNavigateToTeams,
+        onNavigateToBalance = onNavigateToBalance,
+        onNavigateToBodyScan = onNavigateToBodyScan,
+    )
+}
+
+@Composable
+private fun HomeContent(
+    uiState: HomeUiState,
+    modifier: Modifier = Modifier,
+    onNavigateToMatches: () -> Unit = {},
+    onNavigateToTeams: () -> Unit = {},
+    onNavigateToBalance: () -> Unit = {},
+    onNavigateToBodyScan: () -> Unit = {},
+) {
     val nextMatch = uiState.nextMatch
     val players = uiState.squadPlayers
     val recentMatches = uiState.recentMatches
+    val today = LocalDate.now()
+    val dateLabel = today.format(DateTimeFormatter.ofPattern("EEE · d MMM")).uppercase()
 
     LazyColumn(
         modifier = modifier
@@ -73,33 +101,20 @@ fun HomeScreen(
             ) {
                 Column {
                     Text(
-                        text = "TUE · 14 APR",
+                        text = dateLabel,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Hey, Alex.",
+                        text = stringResource(R.string.home_greeting),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "Let's get a game on.",
+                        text = stringResource(R.string.home_greeting_sub),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onBackground),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "AR",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.background,
                     )
                 }
             }
@@ -125,7 +140,7 @@ fun HomeScreen(
                             .align(Alignment.TopEnd),
                     )
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Pill(text = "Up next · Tonight 7:30", tone = PillTone.Ghost)
+                        Pill(text = stringResource(R.string.home_up_next), tone = PillTone.Ghost)
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
                             text = nextMatch.title,
@@ -143,16 +158,18 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             StackedAvatars(players = players.take(5))
-                            Text(
-                                text = "+7 going",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
-                            )
+                            if (players.isNotEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.home_squad_player_count, players.size),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(18.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Box(modifier = Modifier.weight(1f)) {
-                                PrimaryButton(text = "Balance teams", onClick = onNavigateToBalance)
+                                PrimaryButton(text = stringResource(R.string.home_action_balance_teams), onClick = onNavigateToBalance)
                             }
                             Box(
                                 modifier = Modifier
@@ -167,7 +184,7 @@ fun HomeScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "Roster",
+                                    text = stringResource(R.string.home_action_roster),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.inverseOnSurface,
                                 )
@@ -192,8 +209,8 @@ fun HomeScreen(
 
         item {
             SectionHeader(
-                title = "Recent matches",
-                action = "See all",
+                title = stringResource(R.string.home_section_recent_matches),
+                action = stringResource(R.string.action_see_all),
                 onActionClick = onNavigateToMatches,
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -210,7 +227,7 @@ fun HomeScreen(
         item { Spacer(modifier = Modifier.height(16.dp)) }
 
         item {
-            SectionHeader(title = "Your squad · ${players.size} players", action = "Manage")
+            SectionHeader(title = stringResource(R.string.home_section_your_squad, players.size), action = stringResource(R.string.action_manage))
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 20.dp),
@@ -268,12 +285,12 @@ private fun QuickActionsGrid(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            QuickActionCard("✨", "Auto-balance", "pick players, we'll split", cardBg, borderColor, onBalance)
-            QuickActionCard("➕", "New match", "official or battle royale", cardBg, borderColor, onNewMatch)
+            QuickActionCard("✨", stringResource(R.string.home_quick_auto_balance), stringResource(R.string.home_quick_auto_balance_sub), cardBg, borderColor, onBalance)
+            QuickActionCard("➕", stringResource(R.string.home_quick_new_match), stringResource(R.string.home_quick_new_match_sub), cardBg, borderColor, onNewMatch)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            QuickActionCard("📡", "Scan a player", "measure in 30s", accentBg, borderColor, onScan)
-            QuickActionCard("👥", "Invite friends", "share your squad", cardBg, borderColor, {})
+            QuickActionCard("📡", stringResource(R.string.home_quick_scan_player), stringResource(R.string.home_quick_scan_player_sub), accentBg, borderColor, onScan)
+            QuickActionCard("👥", stringResource(R.string.home_quick_invite_friends), stringResource(R.string.home_quick_invite_friends_sub), cardBg, borderColor, {})
         }
     }
 }
@@ -304,5 +321,33 @@ private fun QuickActionCard(
             Text(text = label, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
             Text(text = sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Home — Light")
+@Composable
+private fun HomeScreenLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        HomeContent(
+            uiState = HomeUiState(
+                nextMatch = SampleDataSource.matches.first(),
+                recentMatches = SampleDataSource.matches.drop(1).take(2),
+                squadPlayers = SampleDataSource.players,
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Home — Dark")
+@Composable
+private fun HomeScreenDarkPreview() {
+    VolyMatcherTheme(darkTheme = true) {
+        HomeContent(
+            uiState = HomeUiState(
+                nextMatch = SampleDataSource.matches.first(),
+                recentMatches = SampleDataSource.matches.drop(1).take(2),
+                squadPlayers = SampleDataSource.players,
+            ),
+        )
     }
 }

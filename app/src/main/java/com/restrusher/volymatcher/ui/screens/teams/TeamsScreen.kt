@@ -23,18 +23,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Team
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.TeamCrest
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun TeamsScreen(
@@ -43,7 +48,15 @@ fun TeamsScreen(
     viewModel: TeamsViewModel = viewModel(factory = TeamsViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    TeamsContent(uiState = uiState, modifier = modifier, onTeamClick = onTeamClick)
+}
 
+@Composable
+private fun TeamsContent(
+    uiState: TeamsUiState,
+    modifier: Modifier = Modifier,
+    onTeamClick: (String) -> Unit = {},
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -60,12 +73,12 @@ fun TeamsScreen(
             ) {
                 Column {
                     Text(
-                        text = "Teams",
+                        text = stringResource(R.string.teams_title),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "${uiState.teams.size} squads · ${uiState.totalPlayerCount} players total",
+                        text = stringResource(R.string.teams_header_count, uiState.teams.size, uiState.totalPlayerCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -98,14 +111,14 @@ fun TeamsScreen(
                             .padding(horizontal = 12.dp, vertical = 5.dp),
                     ) {
                         Text(
-                            text = "Permanent",
+                            text = stringResource(R.string.teams_tab_permanent),
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.background,
                         )
                     }
                     Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)) {
                         Text(
-                            text = "Pickup",
+                            text = stringResource(R.string.teams_tab_pickup),
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -115,14 +128,52 @@ fun TeamsScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        items(uiState.teams, key = { it.name }) { team ->
-            TeamCard(
-                team = team,
-                modifier = Modifier.padding(horizontal = 20.dp),
-                onClick = { onTeamClick(team.name) },
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+        if (uiState.teams.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 40.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.teams_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        } else {
+            items(uiState.teams, key = { it.name }) { team ->
+                TeamCard(
+                    team = team,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    onClick = { onTeamClick(team.name) },
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Teams — Light")
+@Composable
+private fun TeamsLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        TeamsContent(
+            uiState = TeamsUiState(
+                teams = SampleDataSource.teams(),
+                totalPlayerCount = SampleDataSource.players.size,
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Teams — Empty")
+@Composable
+private fun TeamsEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        TeamsContent(uiState = TeamsUiState())
     }
 }
 
@@ -159,7 +210,7 @@ private fun TeamCard(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "${team.players.size} PLAYERS · OVR ${team.overallRating}",
+                        text = stringResource(R.string.teams_card_players_ovr, team.players.size, team.overallRating),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

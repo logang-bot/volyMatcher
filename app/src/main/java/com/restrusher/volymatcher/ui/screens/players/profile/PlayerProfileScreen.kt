@@ -26,8 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -36,11 +39,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.ui.components.Pill
 import com.restrusher.volymatcher.ui.components.PillTone
 import com.restrusher.volymatcher.ui.components.SectionHeader
 import com.restrusher.volymatcher.ui.components.SportGlyph
 import com.restrusher.volymatcher.ui.components.StatBar
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun PlayerProfileScreen(
@@ -51,6 +56,16 @@ fun PlayerProfileScreen(
     viewModel: PlayerProfileViewModel = viewModel(factory = PlayerProfileViewModel.factory(playerId)),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PlayerProfileContent(uiState = uiState, modifier = modifier, onBack = onBack, onScan = onScan)
+}
+
+@Composable
+private fun PlayerProfileContent(
+    uiState: PlayerProfileUiState,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    onScan: () -> Unit = {},
+) {
     val player = uiState.player ?: return
     val accentColor = MaterialTheme.colorScheme.primary
 
@@ -81,7 +96,7 @@ fun PlayerProfileScreen(
                     }
                 }
                 Text(
-                    text = "PROFILE",
+                    text = stringResource(R.string.profile_title),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -143,7 +158,7 @@ fun PlayerProfileScreen(
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Pill(text = "Scanned", tone = PillTone.Lime)
+                        Pill(text = stringResource(R.string.profile_scanned_pill), tone = PillTone.Lime)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = player.name,
@@ -168,7 +183,7 @@ fun PlayerProfileScreen(
         }
 
         item {
-            SectionHeader(title = "Body scan", action = "Re-scan", onActionClick = onScan)
+            SectionHeader(title = stringResource(R.string.profile_section_body_scan), action = stringResource(R.string.profile_action_rescan), onActionClick = onScan)
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 modifier = Modifier
@@ -194,7 +209,7 @@ fun PlayerProfileScreen(
                                 .background(MaterialTheme.colorScheme.secondary),
                         )
                         Text(
-                            text = "LAST SCANNED · 4 DAYS AGO",
+                            text = stringResource(R.string.profile_last_scanned),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -202,12 +217,12 @@ fun PlayerProfileScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     val bodyMetrics = listOf(
-                        Triple("HEIGHT", "${player.height}", "cm"),
-                        Triple("WEIGHT", "${player.weight}", "kg"),
-                        Triple("WINGSPAN", "${player.reach}", "cm"),
-                        Triple("VERT. JUMP", "${player.jump}", "cm"),
-                        Triple("BODY COMP", "19.8", "% fat"),
-                        Triple("SPEED IDX", "${player.speed}", "/100"),
+                        Triple(stringResource(R.string.stat_height), "${player.height}", stringResource(R.string.profile_unit_cm)),
+                        Triple(stringResource(R.string.stat_weight), "${player.weight}", stringResource(R.string.profile_unit_kg)),
+                        Triple(stringResource(R.string.stat_wingspan), "${player.reach}", stringResource(R.string.profile_unit_cm)),
+                        Triple(stringResource(R.string.stat_vert_jump), "${player.jump}", stringResource(R.string.profile_unit_cm)),
+                        Triple(stringResource(R.string.stat_body_comp), "19.8", stringResource(R.string.profile_unit_fat)),
+                        Triple(stringResource(R.string.stat_speed_idx), "${player.speed}", stringResource(R.string.profile_unit_per100)),
                     )
 
                     bodyMetrics.chunked(2).forEach { row ->
@@ -249,7 +264,7 @@ fun PlayerProfileScreen(
         }
 
         item {
-            SectionHeader(title = "Performance")
+            SectionHeader(title = stringResource(R.string.profile_section_performance))
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 modifier = Modifier
@@ -265,18 +280,18 @@ fun PlayerProfileScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(9.dp),
                 ) {
-                    StatBar("JUMP", player.jump, 75, barColor = accentColor)
-                    StatBar("SPEED", player.speed, 100, barColor = accentColor)
-                    StatBar("REACH", player.reach, 260)
-                    StatBar("SKILL", player.skill, 100)
-                    StatBar("STAMINA", 72, 100)
+                    StatBar(stringResource(R.string.stat_jump), player.jump, 75, barColor = accentColor)
+                    StatBar(stringResource(R.string.stat_speed), player.speed, 100, barColor = accentColor)
+                    StatBar(stringResource(R.string.stat_reach), player.reach, 260)
+                    StatBar(stringResource(R.string.stat_skill), player.skill, 100)
+                    StatBar(stringResource(R.string.stat_stamina), 72, 100)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
 
         item {
-            SectionHeader(title = "Last 5 matches")
+            SectionHeader(title = stringResource(R.string.profile_section_last5))
             Spacer(modifier = Modifier.height(12.dp))
         }
 
@@ -301,12 +316,25 @@ fun PlayerProfileScreen(
                         Text(match.title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onBackground)
                         Text(match.date.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text("MVP", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                    Text("W", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.profile_result_mvp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.profile_result_win), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Player Profile — Light")
+@Composable
+private fun PlayerProfileLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        PlayerProfileContent(
+            uiState = PlayerProfileUiState(
+                player = SampleDataSource.players.first(),
+                recentMatches = SampleDataSource.matches.take(3),
+            ),
+        )
     }
 }
 

@@ -4,5 +4,5 @@ import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.domain.repository.PlayerRepository
 
 class GetPlayerByIdUseCase(private val repository: PlayerRepository) {
-    operator fun invoke(id: String): Player? = repository.getById(id)
+    suspend operator fun invoke(id: String): Player? = repository.getById(id)
 }

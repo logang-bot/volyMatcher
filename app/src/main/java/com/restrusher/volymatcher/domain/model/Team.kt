@@ -9,6 +9,10 @@ data class Team(
     val wins: Int,
     val losses: Int,
     val overallRating: Int,
+    val sport: String = "",
+    val createdAt: String = "",
+    val setDiff: Int = 0,
+    val recentResults: List<String> = emptyList(),
 ) {
     val winPercentage: Float get() = wins.toFloat() / (wins + losses).coerceAtLeast(1)
 }

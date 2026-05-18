@@ -33,7 +33,7 @@ class HomeViewModel(
         viewModelScope.launch { loadData() }
     }
 
-    private fun loadData() {
+    private suspend fun loadData() {
         val matches = getMatchesUseCase()
         val players = getPlayersUseCase()
         _uiState.update {

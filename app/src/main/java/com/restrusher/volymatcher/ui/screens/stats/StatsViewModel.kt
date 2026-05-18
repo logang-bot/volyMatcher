@@ -37,7 +37,7 @@ class StatsViewModel(
         viewModelScope.launch { loadData() }
     }
 
-    private fun loadData() {
+    private suspend fun loadData() {
         val players = getPlayersUseCase().sortedByDescending { it.skill }
         val teams = getTeamsUseCase().sortedByDescending { it.winPercentage }
         _uiState.update { it.copy(leaders = players.take(6), teams = teams) }

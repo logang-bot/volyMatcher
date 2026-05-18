@@ -4,5 +4,5 @@ import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.domain.repository.PlayerRepository
 
 class GetPlayersUseCase(private val repository: PlayerRepository) {
-    operator fun invoke(): List<Player> = repository.getAll()
+    suspend operator fun invoke(): List<Player> = repository.getAll()
 }

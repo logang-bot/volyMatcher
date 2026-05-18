@@ -1,5 +1,7 @@
 package com.restrusher.volymatcher.ui.navigation
 
+import androidx.annotation.StringRes
+import com.restrusher.volymatcher.R
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -22,14 +24,14 @@ import kotlin.reflect.KClass
 data class BottomNavTab(
     val routeClass: KClass<*>,
     val routeInstance: Any,
-    val label: String,
+    @StringRes val label: Int,
     val isPrimary: Boolean = false,
 )
 
 val bottomNavTabs = listOf(
-    BottomNavTab(HomeRoute::class, HomeRoute, "Home"),
-    BottomNavTab(MatchesRoute::class, MatchesRoute, "Matches"),
-    BottomNavTab(AutoBalanceRoute::class, AutoBalanceRoute, "Balance", isPrimary = true),
-    BottomNavTab(PlayersRoute::class, PlayersRoute, "Players"),
-    BottomNavTab(StatsRoute::class, StatsRoute, "Stats"),
+    BottomNavTab(HomeRoute::class, HomeRoute, R.string.nav_home),
+    BottomNavTab(MatchesRoute::class, MatchesRoute, R.string.nav_matches),
+    BottomNavTab(AutoBalanceRoute::class, AutoBalanceRoute, R.string.nav_balance, isPrimary = true),
+    BottomNavTab(PlayersRoute::class, PlayersRoute, R.string.nav_players),
+    BottomNavTab(StatsRoute::class, StatsRoute, R.string.nav_stats),
 )

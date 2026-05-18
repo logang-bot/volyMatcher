@@ -4,11 +4,13 @@
 
 | Layer | Library / version |
 |---|---|
-| Language | Kotlin 2.2.10 |
+| Language | Kotlin 2.2.21 |
 | Build | AGP 9.1.0, Gradle Kotlin DSL |
 | UI | Jetpack Compose (BOM 2024.09.00) + Material 3 |
 | Navigation | Navigation Compose 2.8.4 (type-safe routes) |
 | Serialization | `kotlin.plugin.serialization` (same version as Kotlin) |
+| Local DB | Room 2.7.0 (entities, DAOs, `@Upsert`) |
+| Annotation processing | KSP 2.2.21-2.0.5 (replaces KAPT for Room) |
 | Min SDK | 24 · Target/Compile SDK 36 |
 
 ---
@@ -38,14 +40,34 @@ com.restrusher.volymatcher
 │       ├── GetTeamByNameUseCase.kt
 │       └── GetBalancedTeamsUseCase.kt  — snake-draft algorithm
 ├── data/
+│   ├── local/
+│   │   ├── entity/
+│   │   │   ├── PlayerEntity.kt    — Room entity (tableName = "players")
+│   │   │   ├── MatchEntity.kt     — Room entity (tableName = "matches")
+│   │   │   └── TeamEntity.kt      — Room entity (tableName = "teams")
+│   │   ├── dao/
+│   │   │   ├── PlayerDao.kt       — getAll, getById, getByIds, upsertAll
+│   │   │   ├── MatchDao.kt        — getAll, getById, upsertAll
+│   │   │   └── TeamDao.kt         — getAll, getByName, upsertAll
+│   │   ├── database/
+│   │   │   └── AppDatabase.kt     — RoomDatabase singleton (version 1)
+│   │   └── mapper/
+│   │       ├── PlayerMapper.kt    — PlayerEntity ↔ Player domain
+│   │       ├── MatchMapper.kt     — MatchEntity ↔ Match domain
+│   │       └── TeamMapper.kt      — TeamEntity ↔ Team domain
+│   ├── remote/
+│   │   └── dto/
+│   │       ├── PlayerDto.kt       — network model + toEntity()
+│   │       ├── MatchDto.kt        — network model + toEntity()
+│   │       └── TeamDto.kt         — network model + toEntity()
 │   ├── source/
-│   │   └── SampleDataSource.kt  — hard-coded players, matches, teams
+│   │   └── SampleDataSource.kt   — preview data + first-launch DB seed
 │   ├── repository/
 │   │   ├── PlayerRepositoryImpl.kt
 │   │   ├── MatchRepositoryImpl.kt
 │   │   └── TeamRepositoryImpl.kt
 │   └── di/
-│       └── RepositoryLocator.kt  — manual DI singleton (replaces Hilt)
+│       └── RepositoryLocator.kt  — manual DI singleton; call init(app) + seedIfEmpty()
 ├── ui/
 │   ├── components/
 │   │   ├── Avatar.kt
@@ -107,7 +129,9 @@ com.restrusher.volymatcher
 
 **ViewModel per feature.** Every screen has a co-located ViewModel (same package). ViewModels own `MutableStateFlow<UiState>` and expose an immutable `StateFlow`. Screens call `viewModel(factory = ...)` and observe via `collectAsStateWithLifecycle()`.
 
-**Manual DI via `RepositoryLocator`.** `RepositoryLocator` is an `object` singleton that instantiates each `RepositoryImpl` once. ViewModel companion factories reference it. Replace with Hilt when ready.
+**Manual DI via `RepositoryLocator`.** `RepositoryLocator` is an `object` singleton that holds the Room `AppDatabase` and exposes lazy-initialized repositories. Call `RepositoryLocator.init(app)` from `Application.onCreate()` before accessing any repository. Replace with Hilt when ready.
+
+**Application class — `VolyMatcherApp`.** Extends `Application` and registered in `AndroidManifest.xml`. Calls `RepositoryLocator.init(this)` and launches a coroutine to `seedIfEmpty()`, which populates the DB from `SampleDataSource` on first install.
 
 **Hero-card pattern.** Sections with a dark background in either theme use `inverseSurface` / `inverseOnSurface` instead of a hardcoded dark color. In light mode these are `Ink` / `Paper`; in dark mode they are `DarkHeroBg` / `DarkOnSurface`.
 

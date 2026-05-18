@@ -28,7 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
+import com.restrusher.volymatcher.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -39,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun BodyScanScreen(
@@ -48,6 +53,15 @@ fun BodyScanScreen(
     viewModel: BodyScanViewModel = viewModel(factory = BodyScanViewModel.factory(playerId)),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    BodyScanContent(uiState = uiState, modifier = modifier, onBack = onBack)
+}
+
+@Composable
+private fun BodyScanContent(
+    uiState: BodyScanUiState,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+) {
     val player = uiState.player ?: return
     val accentColor = MaterialTheme.colorScheme.primary
     val heroBg = MaterialTheme.colorScheme.inverseSurface
@@ -78,7 +92,7 @@ fun BodyScanScreen(
                         Icon(Icons.Rounded.ArrowBack, "Back", tint = heroFg, modifier = Modifier.size(16.dp))
                     }
                 }
-                Text(text = "SCAN · STEP 2/3", style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
+                Text(text = stringResource(R.string.scan_step), style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -93,8 +107,8 @@ fun BodyScanScreen(
 
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(text = "${player.name} · stand still", style = MaterialTheme.typography.headlineLarge, color = heroFg)
-                Text(text = "ARMS OUT · 2M FROM CAMERA", style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
+                Text(text = stringResource(R.string.scan_instruction, player.name), style = MaterialTheme.typography.headlineLarge, color = heroFg)
+                Text(text = stringResource(R.string.scan_position), style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
             }
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -160,7 +174,7 @@ fun BodyScanScreen(
                         .background(Color(0xFF1A1613).copy(alpha = 0.75f))
                         .padding(horizontal = 8.dp, vertical = 5.dp),
                 ) {
-                    Text("● CAPTURING", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                    Text(stringResource(R.string.scan_capturing), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                     Text("FRAME 247/300", style = MaterialTheme.typography.labelSmall, color = heroFg.copy(alpha = 0.8f))
                 }
 
@@ -184,7 +198,7 @@ fun BodyScanScreen(
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("SCANNING", style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
+                    Text(stringResource(R.string.scan_progress_label), style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
                     Text("82%", style = MaterialTheme.typography.labelMedium, color = accentColor)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -209,16 +223,16 @@ fun BodyScanScreen(
 
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(text = "CAPTURING", style = MaterialTheme.typography.labelSmall, color = heroFg.copy(alpha = 0.5f))
+                Text(text = stringResource(R.string.scan_stats_label), style = MaterialTheme.typography.labelSmall, color = heroFg.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(10.dp))
 
                 val stats = listOf(
-                    Triple("HEIGHT", "${player.height} cm", true),
-                    Triple("WEIGHT", "${player.weight} kg", true),
-                    Triple("WINGSPAN", "${player.reach} cm", true),
-                    Triple("VERT. JUMP", "…", false),
-                    Triple("BODY COMP", "scanning", false),
-                    Triple("HAND", player.hand, true),
+                    Triple(stringResource(R.string.stat_height), "${player.height} cm", true),
+                    Triple(stringResource(R.string.stat_weight), "${player.weight} kg", true),
+                    Triple(stringResource(R.string.stat_wingspan), "${player.reach} cm", true),
+                    Triple(stringResource(R.string.stat_vert_jump), "…", false),
+                    Triple(stringResource(R.string.stat_body_comp), stringResource(R.string.scan_scanning_value), false),
+                    Triple(stringResource(R.string.stat_hand), player.hand, true),
                 )
 
                 stats.chunked(2).forEach { row ->
@@ -272,7 +286,7 @@ fun BodyScanScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Hold steady…",
+                    text = stringResource(R.string.scan_hold_steady),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = Color.White,
                 )
@@ -292,5 +306,13 @@ private fun CornerBracket(modifier: Modifier = Modifier, color: Color, isTop: Bo
             if (isLeft) drawLine(color, Offset(0f, if (isTop) 0f else size.height), Offset(0f, if (isTop) len else size.height - len), sw)
             else drawLine(color, Offset(size.width, if (isTop) 0f else size.height), Offset(size.width, if (isTop) len else size.height - len), sw)
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Body Scan — Light")
+@Composable
+private fun BodyScanLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        BodyScanContent(uiState = BodyScanUiState(player = SampleDataSource.players.first()))
     }
 }

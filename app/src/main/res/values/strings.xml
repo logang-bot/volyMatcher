@@ -1,3 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">VolyMatcher</string>
+
+    <!-- ── Navigation ─────────────────────────────────────────────── -->
+    <string name="nav_home">Home</string>
+    <string name="nav_matches">Matches</string>
+    <string name="nav_balance">Balance</string>
+    <string name="nav_players">Players</string>
+    <string name="nav_stats">Stats</string>
+
+    <!-- ── Common actions ─────────────────────────────────────────── -->
+    <string name="action_back">Back</string>
+    <string name="action_see_all">See all</string>
+    <string name="action_manage">Manage</string>
+    <string name="action_edit">Edit</string>
+
+    <!-- ── Shared stat labels ─────────────────────────────────────── -->
+    <string name="stat_height">HEIGHT</string>
+    <string name="stat_weight">WEIGHT</string>
+    <string name="stat_reach">REACH</string>
+    <string name="stat_jump">JUMP</string>
+    <string name="stat_speed">SPEED</string>
+    <string name="stat_skill">SKILL</string>
+    <string name="stat_wingspan">WINGSPAN</string>
+    <string name="stat_vert_jump">VERT. JUMP</string>
+    <string name="stat_body_comp">BODY COMP</string>
+    <string name="stat_hand">HAND</string>
+    <string name="stat_stamina">STAMINA</string>
+    <string name="stat_speed_idx">SPEED IDX</string>
+
+    <!-- ── Home screen ────────────────────────────────────────────── -->
+    <string name="home_greeting">Hey, Coach.</string>
+    <string name="home_greeting_sub">Let\'s get a game on.</string>
+    <string name="home_up_next">Up next · Tonight 7:30</string>
+    <string name="home_action_balance_teams">Balance teams</string>
+    <string name="home_action_roster">Roster</string>
+    <string name="home_section_recent_matches">Recent matches</string>
+    <!-- %d = player count -->
+    <string name="home_section_your_squad">Your squad · %d players</string>
+    <string name="home_squad_player_count">%d players</string>
+    <string name="home_quick_auto_balance">Auto-balance</string>
+    <string name="home_quick_auto_balance_sub">pick players, we\'ll split</string>
+    <string name="home_quick_new_match">New match</string>
+    <string name="home_quick_new_match_sub">official or battle royale</string>
+    <string name="home_quick_scan_player">Scan a player</string>
+    <string name="home_quick_scan_player_sub">measure in 30s</string>
+    <string name="home_quick_invite_friends">Invite friends</string>
+    <string name="home_quick_invite_friends_sub">share your squad</string>
+
+    <!-- ── Players screen ─────────────────────────────────────────── -->
+    <string name="players_title">Players</string>
+    <string name="players_empty_subtitle">No players yet</string>
+    <!-- %d = player count -->
+    <string name="players_count_subtitle">%d in your squad</string>
+    <string name="players_search_hint">Search your squad…</string>
+    <!-- %s = player name -->
+    <string name="players_mvp_banner">%s is your MVP</string>
+
+    <!-- ── Matches screen ─────────────────────────────────────────── -->
+    <string name="matches_title">Matches</string>
+    <string name="matches_stat_matches">matches</string>
+    <string name="matches_stat_completed">completed</string>
+    <string name="matches_stat_avg_balance">avg balance</string>
+    <string name="matches_filter_all_label">All matches</string>
+    <!-- %d = filtered match count -->
+    <string name="matches_games_count">%d GAMES</string>
+    <string name="matches_empty">No matches yet. Tap ＋ to create one.</string>
+    <string name="matches_winner_label">WINNER</string>
+    <string name="matches_official_pill">Official</string>
+
+    <!-- ── Match detail screen ────────────────────────────────────── -->
+    <string name="match_detail_not_found">Match not found</string>
+    <string name="match_detail_live_pill">● LIVE</string>
+    <string name="match_detail_on_court">On court</string>
+    <string name="match_detail_sub">Sub</string>
+    <string name="match_detail_vs">vs</string>
+
+    <!-- ── Create match screen ────────────────────────────────────── -->
+    <string name="create_match_step">STEP 1 / 3</string>
+    <string name="create_match_title">New match.\nWhat\'s the vibe?</string>
+    <string name="create_match_format_label">FORMAT</string>
+    <string name="create_match_format_official">Official</string>
+    <string name="create_match_format_official_sub">Two teams head-to-head</string>
+    <string name="create_match_format_br">Battle Royale</string>
+    <string name="create_match_format_br_sub">3+ teams, rotate in</string>
+    <string name="create_match_br_style_label">BR STYLE</string>
+    <string name="create_match_br_king">King of the court</string>
+    <string name="create_match_br_king_sub">Winner stays, losers rotate</string>
+    <string name="create_match_br_round_robin">Round robin</string>
+    <string name="create_match_br_round_robin_sub">All teams play each other, points decide</string>
+    <string name="create_match_br_bracket">Bracket elim</string>
+    <string name="create_match_br_bracket_sub">Single knockout tree</string>
+    <string name="create_match_sport_label">SPORT</string>
+    <string name="create_match_sport_volleyball">🏐 Volleyball</string>
+    <string name="create_match_sport_soccer">⚽ Soccer</string>
+    <string name="create_match_sport_basketball">🏀 Basketball</string>
+    <string name="create_match_sport_other">+ Other</string>
+    <string name="create_match_players_per_team">PLAYERS PER TEAM</string>
+    <string name="create_match_next">Next · Pick players</string>
+
+    <!-- ── Teams screen ───────────────────────────────────────────── -->
+    <string name="teams_title">Teams</string>
+    <!-- %1$d = squad count, %2$d = total player count -->
+    <string name="teams_header_count">%1$d squads · %2$d players total</string>
+    <string name="teams_tab_permanent">Permanent</string>
+    <string name="teams_tab_pickup">Pickup</string>
+    <string name="teams_empty">No teams yet. Tap ＋ to create one.</string>
+    <!-- %1$d = player count, %2$d = ovr rating -->
+    <string name="teams_card_players_ovr">%1$d PLAYERS · OVR %2$d</string>
+
+    <!-- ── Team detail screen ─────────────────────────────────────── -->
+    <string name="team_detail_not_found">Team not found</string>
+    <string name="team_detail_stat_wins">wins</string>
+    <string name="team_detail_stat_losses">losses</string>
+    <string name="team_detail_stat_overall">overall</string>
+    <string name="team_detail_stat_set_diff">set diff</string>
+    <string name="team_detail_profile_section">Team profile</string>
+    <!-- %d = player count -->
+    <string name="team_detail_avg_label">AVG OF %d PLAYERS</string>
+    <string name="team_detail_section_roster">Roster</string>
+    <string name="team_detail_section_last5">Last 5</string>
+    <string name="team_detail_empty_results">No results yet</string>
+
+    <!-- ── Auto-balance screen ────────────────────────────────────── -->
+    <string name="balance_header">BALANCE</string>
+    <!-- %1$d = team A size, %2$d = team B size -->
+    <string name="balance_header_with_size">BALANCE · %1$dv%2$d</string>
+    <string name="balance_title">Balanced.</string>
+    <string name="balance_subtitle">Two fair squads, based on your weights.</string>
+    <string name="balance_team_a">Team A</string>
+    <string name="balance_team_b">Team B</string>
+    <!-- %d = OVR delta value -->
+    <string name="balance_delta_ovr">OVR %d</string>
+    <!-- %s = pre-formatted delta with sign, e.g. "+3" or "-2" -->
+    <string name="balance_delta_reach">REACH %s</string>
+    <string name="balance_delta_jump">JUMP %s</string>
+    <string name="balance_fair">● FAIR</string>
+    <string name="balance_section_weights">What matters?</string>
+    <string name="balance_auto_label">AUTO</string>
+    <string name="balance_weight_skill">Skill rating</string>
+    <string name="balance_weight_height_reach">Height &amp; reach</string>
+    <string name="balance_weight_jump">Jump</string>
+    <string name="balance_weight_speed">Speed</string>
+    <string name="balance_weight_role">Role coverage</string>
+    <string name="balance_hard_rules">Hard rules</string>
+    <string name="balance_rule_split_scanned">Split scanned</string>
+    <string name="balance_rule_keep_friends">Keep friends</string>
+    <string name="balance_section_draft">Draft order</string>
+    <!-- %d = total player count -->
+    <string name="balance_draft_snake_label">SNAKE · %d PLAYERS</string>
+    <!-- %d = remaining picks -->
+    <string name="balance_draft_remaining">+ %d more</string>
+    <string name="balance_action_lock">Lock it in</string>
+    <string name="balance_action_reroll">⇄ Re-roll</string>
+
+    <!-- ── Stats screen ───────────────────────────────────────────── -->
+    <string name="stats_title">Standings</string>
+    <string name="stats_top_squad">TOP OF THE SQUAD</string>
+    <string name="stats_section_teams">Teams</string>
+
+    <!-- ── Body scan screen ───────────────────────────────────────── -->
+    <string name="scan_step">SCAN · STEP 2/3</string>
+    <!-- %s = player name -->
+    <string name="scan_instruction">%s · stand still</string>
+    <string name="scan_position">ARMS OUT · 2M FROM CAMERA</string>
+    <string name="scan_capturing">● CAPTURING</string>
+    <string name="scan_progress_label">SCANNING</string>
+    <string name="scan_stats_label">CAPTURING</string>
+    <string name="scan_scanning_value">scanning</string>
+    <string name="scan_hold_steady">Hold steady…</string>
+
+    <!-- ── Player profile screen ──────────────────────────────────── -->
+    <string name="profile_title">PROFILE</string>
+    <string name="profile_scanned_pill">Scanned</string>
+    <string name="profile_section_body_scan">Body scan</string>
+    <string name="profile_action_rescan">Re-scan</string>
+    <string name="profile_last_scanned">LAST SCANNED · 4 DAYS AGO</string>
+    <string name="profile_unit_cm">cm</string>
+    <string name="profile_unit_kg">kg</string>
+    <string name="profile_unit_fat">&#37; fat</string>
+    <string name="profile_unit_per100">/100</string>
+    <string name="profile_section_performance">Performance</string>
+    <string name="profile_section_last5">Last 5 matches</string>
+    <string name="profile_result_mvp">MVP</string>
+    <string name="profile_result_win">W</string>
 </resources>

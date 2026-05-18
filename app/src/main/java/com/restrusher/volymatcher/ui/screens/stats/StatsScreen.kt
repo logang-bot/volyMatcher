@@ -24,6 +24,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,15 +33,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.Chip
 import com.restrusher.volymatcher.ui.components.SectionHeader
 import com.restrusher.volymatcher.ui.components.TeamCrest
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun StatsScreen(
@@ -48,7 +53,23 @@ fun StatsScreen(
     viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    StatsContent(
+        uiState = uiState,
+        modifier = modifier,
+        onPlayerClick = onPlayerClick,
+        onScope = { viewModel.setScope(it) },
+        onTab = { viewModel.setTab(it) },
+    )
+}
 
+@Composable
+private fun StatsContent(
+    uiState: StatsUiState,
+    modifier: Modifier = Modifier,
+    onPlayerClick: (String) -> Unit = {},
+    onScope: (String) -> Unit = {},
+    onTab: (String) -> Unit = {},
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -57,8 +78,8 @@ fun StatsScreen(
     ) {
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
-                Text("Standings", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
-                Text("April 2026 · all sports", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.stats_title), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
+                Text(uiState.activeScope, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
@@ -70,7 +91,7 @@ fun StatsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 uiState.scopes.forEach { scope ->
-                    Chip(label = scope, active = uiState.activeScope == scope, onClick = { viewModel.setScope(scope) })
+                    Chip(label = scope, active = uiState.activeScope == scope, onClick = { onScope(scope) })
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -87,7 +108,7 @@ fun StatsScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "TOP OF THE SQUAD",
+                        text = stringResource(R.string.stats_top_squad),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,
@@ -124,7 +145,7 @@ fun StatsScreen(
                     val isActive = uiState.activeTab == tab
                     Box(
                         modifier = Modifier
-                            .clickable { viewModel.setTab(tab) }
+                            .clickable { onTab(tab) }
                             .padding(vertical = 8.dp)
                             .padding(end = 18.dp),
                     ) {
@@ -160,13 +181,9 @@ fun StatsScreen(
 
         items(uiState.leaders, key = { it.id }) { player ->
             val rank = uiState.leaders.indexOf(player) + 1
-            val delta = when (rank) {
-                1 -> "+2"; 2 -> "−1"; 3 -> "+1"; else -> "·"
-            }
             LeaderRow(
                 player = player,
                 rank = rank,
-                delta = delta,
                 modifier = Modifier.padding(horizontal = 20.dp),
                 onClick = { onPlayerClick(player.id) },
             )
@@ -175,7 +192,7 @@ fun StatsScreen(
 
         item { Spacer(modifier = Modifier.height(28.dp)) }
 
-        item { SectionHeader(title = "Teams") }
+        item { SectionHeader(title = stringResource(R.string.stats_section_teams)) }
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         items(uiState.teams, key = { it.name }) { team ->
@@ -273,7 +290,6 @@ private fun PodiumEntry(
 private fun LeaderRow(
     player: Player,
     rank: Int,
-    delta: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
@@ -304,15 +320,6 @@ private fun LeaderRow(
                 Text(player.role.uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(
-                text = delta,
-                style = MaterialTheme.typography.labelMedium,
-                color = when {
-                    delta.startsWith("+") -> MaterialTheme.colorScheme.primary
-                    delta.startsWith("−") -> MaterialTheme.colorScheme.onSurfaceVariant
-                    else -> MaterialTheme.colorScheme.outline
-                },
-            )
-            Text(
                 text = player.skill.toString(),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -320,5 +327,26 @@ private fun LeaderRow(
                 textAlign = TextAlign.End,
             )
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Stats — Light")
+@Composable
+private fun StatsLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        StatsContent(
+            uiState = StatsUiState(
+                leaders = SampleDataSource.players.sortedByDescending { it.skill }.take(6),
+                teams = SampleDataSource.teams().sortedByDescending { it.winPercentage },
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Stats — Empty")
+@Composable
+private fun StatsEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        StatsContent(uiState = StatsUiState())
     }
 }

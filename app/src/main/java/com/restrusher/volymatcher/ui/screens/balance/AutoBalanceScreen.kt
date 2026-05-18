@@ -2,6 +2,7 @@ package com.restrusher.volymatcher.ui.screens.balance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,6 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
+import com.restrusher.volymatcher.domain.model.BalancedTeams
 import com.restrusher.volymatcher.domain.model.CrestShape
 import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.ui.components.Avatar
@@ -45,6 +51,7 @@ import com.restrusher.volymatcher.ui.components.Pill
 import com.restrusher.volymatcher.ui.components.PillTone
 import com.restrusher.volymatcher.ui.components.TeamCrest
 import com.restrusher.volymatcher.ui.components.WeightSlider
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun AutoBalanceScreen(
@@ -53,6 +60,21 @@ fun AutoBalanceScreen(
     viewModel: AutoBalanceViewModel = viewModel(factory = AutoBalanceViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    AutoBalanceContent(
+        uiState = uiState,
+        modifier = modifier,
+        onBack = onBack,
+        onReBalance = { viewModel.reBalance() },
+    )
+}
+
+@Composable
+private fun AutoBalanceContent(
+    uiState: AutoBalanceUiState,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    onReBalance: () -> Unit = {},
+) {
     val balanced = uiState.balancedTeams
 
     LazyColumn(
@@ -82,7 +104,7 @@ fun AutoBalanceScreen(
                     }
                 }
                 Text(
-                    text = "BALANCE · 3/3",
+                    text = if (balanced != null) stringResource(R.string.balance_header_with_size, balanced.teamA.size, balanced.teamB.size) else stringResource(R.string.balance_header),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -108,13 +130,13 @@ fun AutoBalanceScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Balanced.",
+                        text = stringResource(R.string.balance_title),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Two fair squads, based on your weights.",
+                        text = stringResource(R.string.balance_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -133,7 +155,7 @@ fun AutoBalanceScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     BalanceTeamCard(
-                        name = "Team A",
+                        name = stringResource(R.string.balance_team_a),
                         letter = 'A',
                         color = MaterialTheme.colorScheme.primary,
                         shape = CrestShape.Shield,
@@ -142,7 +164,7 @@ fun AutoBalanceScreen(
                         modifier = Modifier.weight(1f),
                     )
                     BalanceTeamCard(
-                        name = "Team B",
+                        name = stringResource(R.string.balance_team_b),
                         letter = 'B',
                         color = MaterialTheme.colorScheme.onBackground,
                         shape = CrestShape.Disc,
@@ -172,12 +194,20 @@ fun AutoBalanceScreen(
                     ) {
                         Text("Δ", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
                         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("OVR ${balanced.ovrA - balanced.ovrB}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("REACH −3", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("JUMP +2", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.balance_delta_ovr, balanced.ovrA - balanced.ovrB), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                text = stringResource(R.string.balance_delta_reach, if (balanced.reachDelta >= 0) "+${balanced.reachDelta}" else "${balanced.reachDelta}"),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = stringResource(R.string.balance_delta_jump, if (balanced.jumpDelta >= 0) "+${balanced.jumpDelta}" else "${balanced.jumpDelta}"),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                         Text(
-                            text = "● FAIR",
+                            text = stringResource(R.string.balance_fair),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.secondary,
                         )
@@ -195,8 +225,8 @@ fun AutoBalanceScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom,
             ) {
-                Text("What matters?", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
-                Text("AUTO", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.balance_section_weights), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.balance_auto_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -214,11 +244,11 @@ fun AutoBalanceScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    WeightSlider("Skill rating", uiState.skillWeight)
-                    WeightSlider("Height & reach", uiState.heightReachWeight)
-                    WeightSlider("Jump", uiState.jumpWeight)
-                    WeightSlider("Speed", uiState.speedWeight)
-                    WeightSlider("Role coverage", uiState.roleCoverageWeight)
+                    WeightSlider(stringResource(R.string.balance_weight_skill), uiState.skillWeight)
+                    WeightSlider(stringResource(R.string.balance_weight_height_reach), uiState.heightReachWeight)
+                    WeightSlider(stringResource(R.string.balance_weight_jump), uiState.jumpWeight)
+                    WeightSlider(stringResource(R.string.balance_weight_speed), uiState.speedWeight)
+                    WeightSlider(stringResource(R.string.balance_weight_role), uiState.roleCoverageWeight)
 
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
                     Row(
@@ -226,10 +256,10 @@ fun AutoBalanceScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Hard rules", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.balance_hard_rules), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Pill(text = "Split scanned", tone = PillTone.Outline)
-                            Pill(text = "Keep friends", tone = PillTone.Ghost)
+                            Pill(text = stringResource(R.string.balance_rule_split_scanned), tone = PillTone.Outline)
+                            Pill(text = stringResource(R.string.balance_rule_keep_friends), tone = PillTone.Ghost)
                         }
                     }
                 }
@@ -246,8 +276,8 @@ fun AutoBalanceScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    Text("Draft order", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
-                    Text("SNAKE · ${balanced.teamA.size + balanced.teamB.size} PLAYERS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.balance_section_draft), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.balance_draft_snake_label, balanced.teamA.size + balanced.teamB.size), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -273,7 +303,7 @@ fun AutoBalanceScreen(
                         val remaining = (balanced.teamA.size + balanced.teamB.size) - draftPicks.size
                         if (remaining > 0) {
                             Text(
-                                text = "+ $remaining more",
+                                text = stringResource(R.string.balance_draft_remaining, remaining),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.outline,
                                 modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
@@ -294,21 +324,21 @@ fun AutoBalanceScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Box(modifier = Modifier.weight(1f)) {
-                    InkButton(text = "Lock it in")
+                    InkButton(text = stringResource(R.string.balance_action_lock))
                 }
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.surface)
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
+                        .clickable(onClick = onReBalance)
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "⇄ Re-roll",
+                        text = stringResource(R.string.balance_action_reroll),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
             }
@@ -350,7 +380,7 @@ private fun BalanceTeamCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text(text = "OVR $ovr", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = stringResource(R.string.balance_delta_ovr, ovr), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -426,5 +456,26 @@ private fun DraftPickRow(pick: Int, team: String, player: Player) {
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.width(22.dp),
         )
+    }
+}
+
+@Preview(showBackground = true, name = "Auto Balance — Light")
+@Composable
+private fun AutoBalanceLightPreview() {
+    val players = SampleDataSource.players
+    val teamA = players.filterIndexed { i, _ -> i % 2 == 0 }
+    val teamB = players.filterIndexed { i, _ -> i % 2 == 1 }
+    VolyMatcherTheme(darkTheme = false) {
+        AutoBalanceContent(
+            uiState = AutoBalanceUiState(balancedTeams = BalancedTeams(teamA, teamB, 91)),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Auto Balance — Empty")
+@Composable
+private fun AutoBalanceEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        AutoBalanceContent(uiState = AutoBalanceUiState())
     }
 }

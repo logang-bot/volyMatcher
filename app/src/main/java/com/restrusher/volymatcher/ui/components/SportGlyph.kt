@@ -40,7 +40,7 @@ private fun volleyballIcon(): ImageVector = ImageVector.Builder(
         fill = null,
     ) {
         moveTo(1.8f, 8f)
-        cubicTo(4.8f, 7f, 8.8f, 7f, 14.2f, 9f)
+        curveTo(4.8f, 7f, 8.8f, 7f, 14.2f, 9f)
     }
     path(
         stroke = SolidColor(Color.Black),
@@ -49,7 +49,7 @@ private fun volleyballIcon(): ImageVector = ImageVector.Builder(
         fill = null,
     ) {
         moveTo(4f, 3f)
-        cubicTo(6f, 6f, 7f, 11f, 6.5f, 15f)
+        curveTo(6f, 6f, 7f, 11f, 6.5f, 15f)
     }
     path(
         stroke = SolidColor(Color.Black),
@@ -58,7 +58,7 @@ private fun volleyballIcon(): ImageVector = ImageVector.Builder(
         fill = null,
     ) {
         moveTo(12f, 3f)
-        cubicTo(10f, 6f, 9f, 11f, 9.5f, 15f)
+        curveTo(10f, 6f, 9f, 11f, 9.5f, 15f)
     }
 }.build()
 
@@ -84,9 +84,9 @@ private fun basketballIcon(): ImageVector = ImageVector.Builder(
         moveTo(8f, 1.5f)
         verticalLineTo(14.5f)
         moveTo(3f, 3.5f)
-        cubicTo(5f, 5f, 5f, 11f, 3f, 12.5f)
+        curveTo(5f, 5f, 5f, 11f, 3f, 12.5f)
         moveTo(13f, 3.5f)
-        cubicTo(11f, 5f, 11f, 11f, 13f, 12.5f)
+        curveTo(11f, 5f, 11f, 11f, 13f, 12.5f)
     }
 }.build()
 

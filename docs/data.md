@@ -1,23 +1,28 @@
 # Data Layer
 
-## Files
+## Three-model pattern
 
-| File | Contents |
-|---|---|
-| `data/Models.kt` | Data classes and enums — no Compose imports |
-| `data/SampleData.kt` | `samplePlayers` list, `sampleMatches` list, `sampleTeams()` function |
+Each entity has three representations:
+
+| Layer | Model | Package | Purpose |
+|---|---|---|---|
+| Network | `PlayerDto`, `MatchDto`, `TeamDto` | `data/remote/dto/` | JSON deserialization (future API) |
+| Local DB | `PlayerEntity`, `MatchEntity`, `TeamEntity` | `data/local/entity/` | Room storage |
+| Domain/UI | `Player`, `Match`, `Team` | `domain/model/` | Used by use cases and ViewModels |
+
+Mapping direction: **DTO → Entity** (via `toEntity()` extension on the DTO), **Entity → Domain** (via `toDomain()` extension on the entity). Domain models never import Room or networking code.
 
 ---
 
-## Models
+## Domain models
 
 ### Player
 
 ```kotlin
 data class Player(
     val id: String,          // unique identifier used for navigation args
-    val name: String,        // full name, e.g. "Carlos Mendez"
-    val nick: String,        // short display name, e.g. "CMEN"
+    val name: String,        // full name, e.g. "Leo Varga"
+    val nick: String,        // short display name, e.g. "Leo"
     val colorLong: Long,     // avatar background color as 0xFFRRGGBBL
     val initials: String,    // 2-char initials drawn inside avatar
     val height: Int,         // cm
@@ -26,15 +31,12 @@ data class Player(
     val jump: Int,           // vertical jump in cm
     val speed: Int,          // 0–100
     val skill: Int,          // overall rating 0–100
-    val hand: String,        // "Right" | "Left"
+    val hand: String,        // "R" | "L"
     val role: String,        // position label, e.g. "Setter", "Libero"
 )
 ```
 
-**Color convention:** `colorLong` is stored as a `Long` (not `Color`) so the data layer has zero Compose dependency. Convert at the UI boundary:
-```kotlin
-val color = Color(player.colorLong)
-```
+**Color convention:** `colorLong` is stored as a `Long` so the data layer has zero Compose dependency. Convert at the UI boundary: `val color = Color(player.colorLong)`.
 
 ---
 
@@ -43,17 +45,17 @@ val color = Color(player.colorLong)
 ```kotlin
 data class Match(
     val id: String,
-    val sport: String,        // "volleyball" | "basketball" | "soccer" | …
-    val title: String,        // display name, e.g. "Friday Night 6v6"
+    val sport: String,        // "Volleyball" | "Basketball" | "Soccer" | …
+    val title: String,        // display name, e.g. "Tuesday Pickup"
     val format: MatchFormat,
-    val date: String,         // human-readable, e.g. "Apr 19"
+    val date: String,         // human-readable, e.g. "Tue, Apr 14"
     val venue: String,
-    val status: String,       // "Live" | "Upcoming" | "Finished"
-    val score: String?,       // e.g. "25–21" — present when finished
+    val status: String,       // "Live" | "Upcoming" | "Final"
+    val score: String?,       // e.g. "2 — 1" — present for finished official matches
     val teamA: String?,
     val teamB: String?,
-    val winner: String?,      // team name of the winner
-    val teamCount: Int?,      // number of teams (Battle Royale)
+    val winner: String?,      // winner name — present for Battle Royale or finished official
+    val teamCount: Int?,      // number of teams (Battle Royale only)
     val balance: Int,         // balance score 0–100
 )
 
@@ -67,34 +69,69 @@ enum class MatchFormat { Official, BattleRoyale }
 ```kotlin
 data class Team(
     val name: String,
-    val colorLong: Long,       // same color convention as Player
+    val colorLong: Long,
     val shape: CrestShape,
-    val letter: Char,          // single letter shown in TeamCrest
+    val letter: Char,
     val players: List<Player>,
     val wins: Int,
     val losses: Int,
     val overallRating: Int,
+    val sport: String = "",
+    val createdAt: String = "",
+    val setDiff: Int = 0,
+    val recentResults: List<String> = emptyList(),  // e.g. ["W", "W", "L"]
 ) {
-    val winPercentage: Float   // computed: wins / (wins + losses)
+    val winPercentage: Float   // computed: wins / (wins + losses).coerceAtLeast(1)
 }
 
 enum class CrestShape { Shield, Disc, Diamond, Blob }
 ```
 
+`Team.players` is stored in Room as comma-separated player IDs (`TeamEntity.playerIds`). `TeamRepositoryImpl` re-joins them via `PlayerDao`.
+
 ---
 
-## Sample data
+### BalancedTeams
 
-`samplePlayers` — 12 players covering all roles (Setter, Outside, Libero, Middle, Opposite, Universal). Each has a distinct avatar color.
+```kotlin
+data class BalancedTeams(
+    val teamA: List<Player>,
+    val teamB: List<Player>,
+    val balanceScore: Int,
+) {
+    val ovrA: Int        // average skill of team A
+    val ovrB: Int        // average skill of team B
+    val reachDelta: Int  // avgReach(A) − avgReach(B)
+    val jumpDelta: Int   // avgJump(A) − avgJump(B)
+    val draftOrder: List<Pair<String, Player>>  // snake-draft sequence
+}
+```
 
-`sampleMatches` — 5 matches across formats (Official + BattleRoyale) and statuses (Live, Upcoming, Finished).
+---
 
-`sampleTeams(players: List<Player>)` — function that builds 4 teams by selecting from the player list. Returns teams pre-sorted by the callers where needed (e.g. `sortedByDescending { it.winPercentage }`).
+## Room entities
+
+`PlayerEntity`, `MatchEntity`, `TeamEntity` mirror the domain model fields with two differences:
+
+- Enum fields (`role`, `hand`, `shape`, `format`) are stored as `String` and parsed safely in mappers via `runCatching { Enum.valueOf(...) }.getOrDefault(...)`.
+- `TeamEntity.playerIds` is a comma-separated `String` of player IDs; `TeamEntity.recentResults` is a comma-separated `String` of result labels.
+
+---
+
+## SampleDataSource
+
+`data/source/SampleDataSource.kt` serves two purposes:
+
+1. **@Preview data** — imported by `*Preview` composables so Android Studio can render screens without a running device.
+2. **First-launch DB seed** — `RepositoryLocator.seedIfEmpty()` checks if the players table is empty and, if so, inserts all sample players, matches, and teams. This runs once on install via `VolyMatcherApp.onCreate()`.
+
+`SampleDataSource` is **not** referenced by any `RepositoryImpl`; it stays out of production data flows.
 
 ---
 
 ## Conventions
 
-- **No IDs on Team** — teams are identified by name in the current prototype. If navigation to `TeamDetailRoute(teamId)` is needed, `teamId` is matched against `team.name`.
-- **Reach vs wingspan** — `Player.reach` is labelled "REACH" in UI but stores wingspan in cm.
-- **`balance` on Match** — integer 0–100 used by `BalanceMeter` to show how evenly the teams were split.
+- **No IDs on Team** — teams are identified by `name`. Navigation to `TeamDetailScreen` passes `team.name` as the argument.
+- **`reach` vs wingspan** — `Player.reach` stores wingspan in cm; it is labelled "REACH" or "WINGSPAN" depending on context.
+- **`balance` on Match** — integer 0–100 passed to `BalanceMeter` to show how evenly teams were split.
+- **All repository methods are `suspend`** — use cases are also `suspend`. ViewModels call them inside `viewModelScope.launch { }`.

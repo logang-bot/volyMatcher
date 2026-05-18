@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -282,7 +284,7 @@ fun MatchMiniCard(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = if (match.winner != null) "WINNER" else match.status.uppercase(),
+                    text = if (match.winner != null) stringResource(R.string.matches_winner_label) else match.status.uppercase(),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -25,18 +25,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.Chip
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun PlayersScreen(
@@ -46,6 +51,23 @@ fun PlayersScreen(
     viewModel: PlayersViewModel = viewModel(factory = PlayersViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PlayersContent(
+        uiState = uiState,
+        modifier = modifier,
+        onPlayerClick = onPlayerClick,
+        onScan = onScan,
+        onSort = { viewModel.setSort(it) },
+    )
+}
+
+@Composable
+private fun PlayersContent(
+    uiState: PlayersUiState,
+    modifier: Modifier = Modifier,
+    onPlayerClick: (String) -> Unit = {},
+    onScan: () -> Unit = {},
+    onSort: (String) -> Unit = {},
+) {
 
     LazyColumn(
         modifier = modifier
@@ -62,8 +84,12 @@ fun PlayersScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text("Players", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
-                    Text("${uiState.allPlayers.size} in your squad", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.players_title), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
+                    if (uiState.allPlayers.isEmpty()) {
+                        Text(stringResource(R.string.players_empty_subtitle), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Text(stringResource(R.string.players_count_subtitle, uiState.allPlayers.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(
@@ -103,7 +129,7 @@ fun PlayersScreen(
             ) {
                 Text("🔍", style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    text = "Search your squad…",
+                    text = stringResource(R.string.players_search_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.weight(1f),
@@ -123,7 +149,7 @@ fun PlayersScreen(
                     Chip(
                         label = sort,
                         active = sort.contains(uiState.activeSort),
-                        onClick = { viewModel.setSort(sort) },
+                        onClick = { onSort(sort) },
                     )
                 }
             }
@@ -147,12 +173,12 @@ fun PlayersScreen(
                         Text("🏆", style = MaterialTheme.typography.headlineMedium)
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "${mvp.name} is your MVP",
+                                text = stringResource(R.string.players_mvp_banner, mvp.name),
                                 style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.inverseOnSurface,
                             )
                             Text(
-                                text = "${mvp.skill} OVR · 8W·1L THIS MONTH",
+                                text = "${mvp.skill} OVR · ${mvp.role.uppercase()}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.6f),
                             )
@@ -260,5 +286,21 @@ private fun PlayerRow(
                 modifier = Modifier.width(28.dp),
             )
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Players — Light")
+@Composable
+private fun PlayersLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        PlayersContent(uiState = PlayersUiState(allPlayers = SampleDataSource.players))
+    }
+}
+
+@Preview(showBackground = true, name = "Players — Empty")
+@Composable
+private fun PlayersEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        PlayersContent(uiState = PlayersUiState())
     }
 }

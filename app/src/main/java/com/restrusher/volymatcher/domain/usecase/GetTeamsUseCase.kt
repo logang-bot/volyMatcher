@@ -4,5 +4,5 @@ import com.restrusher.volymatcher.domain.model.Team
 import com.restrusher.volymatcher.domain.repository.TeamRepository
 
 class GetTeamsUseCase(private val repository: TeamRepository) {
-    operator fun invoke(): List<Team> = repository.getAll()
+    suspend operator fun invoke(): List<Team> = repository.getAll()
 }

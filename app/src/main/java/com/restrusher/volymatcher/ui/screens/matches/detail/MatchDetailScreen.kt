@@ -25,20 +25,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.restrusher.volymatcher.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.restrusher.volymatcher.data.source.SampleDataSource
+import com.restrusher.volymatcher.domain.model.Match
 import com.restrusher.volymatcher.domain.model.Player
 import com.restrusher.volymatcher.ui.components.Avatar
 import com.restrusher.volymatcher.ui.components.Pill
 import com.restrusher.volymatcher.ui.components.PillTone
 import com.restrusher.volymatcher.ui.components.SectionHeader
+import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
 
 @Composable
 fun MatchDetailScreen(
@@ -48,6 +54,27 @@ fun MatchDetailScreen(
     viewModel: MatchDetailViewModel = viewModel(factory = MatchDetailViewModel.factory(matchId)),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MatchDetailContent(
+        uiState = uiState,
+        modifier = modifier,
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun MatchDetailContent(
+    uiState: MatchDetailUiState,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+) {
+    if (uiState.match == null) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.match_detail_not_found), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        return
+    }
+    val match = uiState.match
+    val isLive = match.status.equals("Live", ignoreCase = true)
 
     LazyColumn(
         modifier = modifier
@@ -85,9 +112,13 @@ fun MatchDetailScreen(
                                 )
                             }
                         }
-                        Pill(text = "● LIVE", tone = PillTone.Accent)
+                        if (isLive) {
+                            Pill(text = stringResource(R.string.match_detail_live_pill), tone = PillTone.Accent)
+                        } else {
+                            Pill(text = match.status.uppercase(), tone = PillTone.Ghost)
+                        }
                         Text(
-                            text = "SET 3 · ${uiState.match?.sport?.uppercase() ?: "VOLLEYBALL"}",
+                            text = match.sport.uppercase(),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.6f),
                         )
@@ -102,100 +133,39 @@ fun MatchDetailScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = uiState.match?.teamA ?: "Orange Crush",
+                                text = match.teamA ?: "",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.inverseOnSurface,
-                            )
-                            Text(
-                                text = "18",
-                                style = MaterialTheme.typography.displayLarge,
                                 color = MaterialTheme.colorScheme.inverseOnSurface,
                             )
                         }
                         Text(
-                            text = "vs",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f),
+                            text = if (match.score != null) match.score else stringResource(R.string.match_detail_vs),
+                            style = if (match.score != null) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = if (match.score != null) 1f else 0.5f),
                         )
                         Column(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.End,
                         ) {
                             Text(
-                                text = uiState.match?.teamB ?: "Cream Wolves",
+                                text = match.teamB ?: "",
                                 style = MaterialTheme.typography.headlineSmall,
                                 color = MaterialTheme.colorScheme.inverseOnSurface,
                             )
-                            Text(
-                                text = "15",
-                                style = MaterialTheme.typography.displayLarge,
-                                color = MaterialTheme.colorScheme.inverseOnSurface,
-                            )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        listOf("25–22 A", "23–25 B", "18–15 A").forEachIndexed { index, set ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.08f))
-                                    .then(
-                                        if (index == 2) Modifier.border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                            RoundedCornerShape(8.dp),
-                                        ) else Modifier
-                                    )
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                            ) {
-                                Text(
-                                    text = "S${index + 1} $set",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center,
+                    if (match.winner != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
+                            Text("🏆", style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = "+ POINT · ORANGE",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White,
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.2f),
-                                    RoundedCornerShape(12.dp),
-                                )
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "+ POINT · WOLVES",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.inverseOnSurface,
+                                text = match.winner,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
                             )
                         }
                     }
@@ -204,7 +174,7 @@ fun MatchDetailScreen(
         }
 
         item {
-            SectionHeader(title = "On court", action = "Sub")
+            SectionHeader(title = stringResource(R.string.match_detail_on_court), action = stringResource(R.string.match_detail_sub))
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier
@@ -213,13 +183,13 @@ fun MatchDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 CourtSide(
-                    teamName = uiState.match?.teamA ?: "Orange Crush",
+                    teamName = match.teamA ?: "",
                     players = uiState.teamAPlayers,
                     accentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f),
                 )
                 CourtSide(
-                    teamName = uiState.match?.teamB ?: "Cream Wolves",
+                    teamName = match.teamB ?: "",
                     players = uiState.teamBPlayers,
                     accentColor = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f),
@@ -228,17 +198,28 @@ fun MatchDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        item {
-            SectionHeader(title = "Timeline")
-            Spacer(modifier = Modifier.height(12.dp))
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                TimelineEvent("18'", "+1", null, "Nia crushing third-ball kills", isAccent = true)
-                TimelineEvent("14'", null, "+1", "Diego's service ace")
-                TimelineEvent("09'", "+1", null, "Maya's tip wins rally", isAccent = true)
-                TimelineEvent("SET 2", "23", "25", "Wolves take set 2", isDivider = true)
-                TimelineEvent("00'", null, null, "Match start · coin toss Wolves")
-            }
-        }
+    }
+}
+
+@Preview(showBackground = true, name = "Match Detail — Light")
+@Composable
+private fun MatchDetailLightPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        MatchDetailContent(
+            uiState = MatchDetailUiState(
+                match = SampleDataSource.matches.first(),
+                teamAPlayers = SampleDataSource.players.take(3),
+                teamBPlayers = SampleDataSource.players.drop(6).take(3),
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Match Detail — Empty")
+@Composable
+private fun MatchDetailEmptyPreview() {
+    VolyMatcherTheme(darkTheme = false) {
+        MatchDetailContent(uiState = MatchDetailUiState())
     }
 }
 
@@ -301,72 +282,3 @@ private fun CourtSide(
     }
 }
 
-@Composable
-private fun TimelineEvent(
-    time: String,
-    scoreA: String?,
-    scoreB: String?,
-    text: String,
-    isAccent: Boolean = false,
-    isDivider: Boolean = false,
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = time,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(40.dp),
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.width(44.dp),
-            ) {
-                if (scoreA != null) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .padding(horizontal = 5.dp, vertical = 2.dp),
-                    ) {
-                        Text(text = scoreA, style = MaterialTheme.typography.labelSmall, color = Color.White)
-                    }
-                }
-                if (scoreB != null) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.onBackground)
-                            .padding(horizontal = 5.dp, vertical = 2.dp),
-                    ) {
-                        Text(
-                            text = scoreB,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.background,
-                        )
-                    }
-                }
-            }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontWeight = if (isAccent) FontWeight.SemiBold else FontWeight.Normal,
-                ),
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Spacer(modifier = Modifier.height(2.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant),
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-}

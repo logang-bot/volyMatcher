@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -70,6 +72,7 @@ fun VolyNavGraph() {
             startDestination = HomeRoute,
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
             composable<HomeRoute> {
@@ -208,7 +211,7 @@ private fun VolyBottomBar(navController: NavHostController) {
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Star,
-                            contentDescription = tab.label,
+                            contentDescription = stringResource(tab.label),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp),
                         )
@@ -230,12 +233,12 @@ private fun VolyBottomBar(navController: NavHostController) {
                     ) {
                         Icon(
                             imageVector = tabIcon(tab.routeClass),
-                            contentDescription = tab.label,
+                            contentDescription = stringResource(tab.label),
                             tint = if (isSelected) accentColor else inactiveColor,
                             modifier = Modifier.size(22.dp),
                         )
                         Text(
-                            text = tab.label,
+                            text = stringResource(tab.label),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             ),
