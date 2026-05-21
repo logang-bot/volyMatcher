@@ -19,7 +19,7 @@ data class BodyScanUiState(
 )
 
 class BodyScanViewModel(
-    private val playerId: String,
+    private val playerId: String?,
     private val getPlayerByIdUseCase: GetPlayerByIdUseCase,
 ) : ViewModel() {
 
@@ -27,13 +27,15 @@ class BodyScanViewModel(
     val uiState: StateFlow<BodyScanUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            _uiState.update { it.copy(player = getPlayerByIdUseCase(playerId)) }
+        if (!playerId.isNullOrBlank()) {
+            viewModelScope.launch {
+                _uiState.update { it.copy(player = getPlayerByIdUseCase(playerId)) }
+            }
         }
     }
 
     companion object {
-        fun factory(playerId: String): ViewModelProvider.Factory = viewModelFactory {
+        fun factory(playerId: String?): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 BodyScanViewModel(
                     playerId = playerId,

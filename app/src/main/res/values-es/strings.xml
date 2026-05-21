@@ -150,12 +150,16 @@
     <!-- ── Body scan screen ───────────────────────────────────────── -->
     <string name="scan_step">ESCANEO · PASO 2/3</string>
     <string name="scan_instruction">%s · quédate quieto</string>
+    <string name="scan_instruction_new">Nuevo jugador · quédate quieto</string>
     <string name="scan_position">BRAZOS EXTENDIDOS · 2M DE LA CÁMARA</string>
     <string name="scan_capturing">● CAPTURANDO</string>
     <string name="scan_progress_label">ESCANEANDO</string>
     <string name="scan_stats_label">CAPTURANDO</string>
     <string name="scan_scanning_value">escaneando</string>
     <string name="scan_hold_steady">No te muevas…</string>
+    <string name="scan_permission_title">Se necesita acceso a la cámara</string>
+    <string name="scan_permission_body">El escaneo usa tu cámara para medir altura, envergadura y composición corporal en 30 segundos.</string>
+    <string name="scan_permission_action">Permitir acceso a la cámara</string>
 
     <!-- ── Player profile screen ──────────────────────────────────── -->
     <string name="profile_title">PERFIL</string>

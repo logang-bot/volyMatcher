@@ -18,7 +18,7 @@ Dashboard with a hero match card, quick-action buttons, recent-matches list, and
 | `onNavigateToMatches` | `MatchesRoute` |
 | `onNavigateToTeams` | `TeamsRoute` |
 | `onNavigateToBalance` | `AutoBalanceRoute` |
-| `onNavigateToBodyScan` | `BodyScanRoute("p1")` |
+| `onNavigateToBodyScan` | `BodyScanRoute(null)` — new-player scan |
 
 ---
 
@@ -46,7 +46,7 @@ Player roster with avatar, name, role, and skill rating. Header shows squad tota
 | Callback | Navigates to |
 |---|---|
 | `onPlayerClick(id)` | `PlayerProfileRoute(playerId)` |
-| `onScan` | `BodyScanRoute("p2")` |
+| `onScan` | `BodyScanRoute(null)` — new-player scan |
 
 ---
 
@@ -147,13 +147,32 @@ Player hero card with avatar (ring variant), all attributes as `StatBar` rows, r
 
 ### BodyScanScreen
 
-**Route:** `BodyScanRoute(playerId: String)`  
-**File:** `ui/screens/scan/BodyScanScreen.kt`
+**Route:** `BodyScanRoute(playerId: String?)`  
+**Files:** `ui/screens/scan/` — `BodyScanScreen.kt`, `BodyScanViewModel.kt`, `CameraViewport.kt`, `CameraPermissionRequest.kt`, `ScanStatsGrid.kt`
 
-Simulated camera body-scan UI with a dark hero background (`inverseSurface`). Includes a scan grid Canvas overlay, body silhouette path, scanning sweep line, live readout overlays, and a captured-stats grid. No bottom bar.
+Live camera body-scan screen. Uses CameraX (`PreviewView` inside `AndroidView`) for the camera feed, with Compose overlays drawn on top. No bottom bar.
 
 | Callback | Navigates to |
 |---|---|
 | `onBack` | `popBackStack()` |
 
-**Note:** This screen uses `inverseSurface` / `inverseOnSurface` for its dark camera viewport, matching the hero-card pattern from the design.
+#### Permission flow
+
+`BodyScanScreen` checks `CAMERA` permission on composition and immediately launches the system dialog if not yet granted. The result is stored as `hasCameraPermission: Boolean` and threaded into `BodyScanContent`.
+
+- **Permission granted →** `CameraViewport` is shown. The back camera is bound to the lifecycle via a `DisposableEffect`; it unbinds automatically on disposal.
+- **Permission denied →** `CameraPermissionRequest` fills the viewport slot — explains the purpose of the camera and provides a "Grant camera access" button to re-trigger the dialog.
+
+#### Composable breakdown
+
+| Composable | File | Role |
+|---|---|---|
+| `BodyScanScreen` | `BodyScanScreen.kt` | Entry point; manages permission state |
+| `BodyScanContent` | `BodyScanScreen.kt` | Orchestrates the full-screen `LazyColumn` layout |
+| `CameraViewport` | `CameraViewport.kt` | Camera preview + all scan overlays (grid, silhouette, scan line, corner brackets, live readouts) |
+| `CameraPermissionRequest` | `CameraPermissionRequest.kt` | Rationale card shown when permission is denied |
+| `ScanStatsGrid` | `ScanStatsGrid.kt` | 2-column grid of captured stat cards below the viewport |
+
+#### `playerId` semantics
+
+`playerId` is `String?`. When `null` (entry from Home or Players quick-action) the scan starts with no pre-loaded player — all stat cards display "scanning". When non-null (entry from `PlayerProfileScreen`) the ViewModel fetches the existing player and pre-fills the stat overlays and grid.

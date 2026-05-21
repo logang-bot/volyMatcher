@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 @Serializable data class MatchDetailRoute(val matchId: String)
 @Serializable data class TeamDetailRoute(val teamId: String)
 @Serializable data class PlayerProfileRoute(val playerId: String)
-@Serializable data class BodyScanRoute(val playerId: String)
+@Serializable data class BodyScanRoute(val playerId: String?)
 
 // ── Bottom-nav tab registry ───────────────────────────────────────────────────
 data class BottomNavTab(

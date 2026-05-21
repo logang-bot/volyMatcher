@@ -15,12 +15,15 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,7 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,7 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -80,7 +84,7 @@ fun VolyNavGraph() {
                     onNavigateToMatches = { navController.navigate(MatchesRoute) },
                     onNavigateToTeams = { navController.navigate(TeamsRoute) },
                     onNavigateToBalance = { navController.navigate(AutoBalanceRoute) },
-                    onNavigateToBodyScan = { navController.navigate(BodyScanRoute("p1")) },
+                    onNavigateToBodyScan = { navController.navigate(BodyScanRoute(null)) },
                 )
             }
             composable<MatchesRoute> {
@@ -113,7 +117,7 @@ fun VolyNavGraph() {
             composable<PlayersRoute> {
                 PlayersScreen(
                     onPlayerClick = { id -> navController.navigate(PlayerProfileRoute(id)) },
-                    onScan = { navController.navigate(BodyScanRoute("p2")) },
+                    onScan = { navController.navigate(BodyScanRoute(null)) },
                 )
             }
             composable<PlayerProfileRoute> { backStack ->
@@ -162,6 +166,20 @@ private fun VolyBottomBar(navController: NavHostController) {
     val accentColor = MaterialTheme.colorScheme.primary
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
 
+    fun navigate(tab: BottomNavTab) = navController.navigate(tab.routeInstance) {
+        popUpTo(HomeRoute) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+
+    val primaryTab = bottomNavTabs.first { it.isPrimary }
+    val regularTabs = bottomNavTabs.filter { !it.isPrimary }
+    val leftTabs = regularTabs.take(2)
+    val rightTabs = regularTabs.drop(2)
+
+    val fabSize = 52.dp
+    val fabHalfSize = 26.dp
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,11 +191,15 @@ private fun VolyBottomBar(navController: NavHostController) {
                 )
             )
             .padding(navBarPadding)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 10.dp),
+        contentAlignment = Alignment.BottomCenter,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(top = fabHalfSize)
+                .shadow(elevation = 4.dp, shape = RoundedCornerShape(22.dp))
                 .clip(RoundedCornerShape(22.dp))
                 .background(surfaceColor)
                 .border(1.dp, borderColor, RoundedCornerShape(22.dp))
@@ -185,76 +207,95 @@ private fun VolyBottomBar(navController: NavHostController) {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            bottomNavTabs.forEach { tab ->
+            leftTabs.forEach { tab ->
                 val isSelected = isRouteActive(tab.routeClass)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { navigate(tab) }
+                        .padding(vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Icon(
+                        imageVector = tabIcon(tab.routeClass),
+                        contentDescription = stringResource(tab.label),
+                        tint = if (isSelected) accentColor else inactiveColor,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    Text(
+                        text = stringResource(tab.label),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        ),
+                        color = if (isSelected) accentColor else inactiveColor,
+                    )
+                }
+            }
 
-                if (tab.isPrimary) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .shadow(
-                                elevation = 8.dp,
-                                shape = CircleShape,
-                                ambientColor = accentColor.copy(alpha = 0.35f),
-                                spotColor = accentColor.copy(alpha = 0.35f),
-                            )
-                            .background(accentColor)
-                            .clickable {
-                                navController.navigate(tab.routeInstance) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Star,
-                            contentDescription = stringResource(tab.label),
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable {
-                                navController.navigate(tab.routeInstance) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                            .padding(vertical = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Icon(
-                            imageVector = tabIcon(tab.routeClass),
-                            contentDescription = stringResource(tab.label),
-                            tint = if (isSelected) accentColor else inactiveColor,
-                            modifier = Modifier.size(22.dp),
-                        )
-                        Text(
-                            text = stringResource(tab.label),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            ),
-                            color = if (isSelected) accentColor else inactiveColor,
+            Spacer(Modifier.weight(1f))
+
+            rightTabs.forEach { tab ->
+                val isSelected = isRouteActive(tab.routeClass)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { navigate(tab) }
+                        .padding(vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Icon(
+                        imageVector = tabIcon(tab.routeClass),
+                        contentDescription = stringResource(tab.label),
+                        tint = if (isSelected) accentColor else inactiveColor,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    Text(
+                        text = stringResource(tab.label),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        ),
+                        color = if (isSelected) accentColor else inactiveColor,
+                    )
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .size(fabSize)
+                .drawBehind {
+                    val center = Offset(size.width / 2f, size.height / 2f)
+                    val baseRadius = size.minDimension / 2f
+                    for (i in 1..4) {
+                        drawCircle(
+                            color = accentColor.copy(alpha = 0.25f / i),
+                            radius = baseRadius + (i * 5).dp.toPx(),
+                            center = center,
                         )
                     }
                 }
-            }
+                .clip(CircleShape)
+                .background(accentColor)
+                .clickable { navigate(primaryTab) },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = stringResource(primaryTab.label),
+                tint = Color.White,
+                modifier = Modifier.size(24.dp),
+            )
         }
     }
 }
 
 private fun tabIcon(routeClass: KClass<*>): ImageVector = when (routeClass) {
     HomeRoute::class -> Icons.Rounded.Home
-    MatchesRoute::class -> Icons.Rounded.Star
-    PlayersRoute::class -> Icons.Rounded.Person
-    StatsRoute::class -> Icons.Rounded.Star
+    MatchesRoute::class -> Icons.Rounded.GridView
+    PlayersRoute::class -> Icons.Rounded.Group
+    StatsRoute::class -> Icons.Rounded.BarChart
     else -> Icons.Rounded.Home
 }

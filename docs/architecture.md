@@ -6,10 +6,11 @@
 |---|---|
 | Language | Kotlin 2.2.21 |
 | Build | AGP 9.1.0, Gradle Kotlin DSL |
-| UI | Jetpack Compose (BOM 2024.09.00) + Material 3 |
+| UI | Jetpack Compose (BOM 2024.09.00) + Material 3 + Material Icons Extended |
 | Navigation | Navigation Compose 2.8.4 (type-safe routes) |
 | Serialization | `kotlin.plugin.serialization` (same version as Kotlin) |
 | Local DB | Room 2.7.0 (entities, DAOs, `@Upsert`) |
+| Camera | CameraX 1.4.0 (`camera-core`, `camera-camera2`, `camera-lifecycle`, `camera-view`) |
 | Annotation processing | KSP 2.2.21-2.0.5 (replaces KAPT for Room) |
 | Min SDK | 24 · Target/Compile SDK 36 |
 
@@ -111,7 +112,10 @@ com.restrusher.volymatcher
 │   │   │   └── StatsViewModel.kt
 │   │   └── scan/
 │   │       ├── BodyScanScreen.kt
-│   │       └── BodyScanViewModel.kt
+│   │       ├── BodyScanViewModel.kt
+│   │       ├── CameraViewport.kt        — live camera preview + scan overlays
+│   │       ├── CameraPermissionRequest.kt — permission rationale + grant button
+│   │       └── ScanStatsGrid.kt         — captured-stats card grid
 │   └── theme/
 │       ├── Color.kt        — palette constants
 │       ├── Theme.kt        — light + dark MaterialTheme color schemes
@@ -131,7 +135,7 @@ com.restrusher.volymatcher
 
 **Manual DI via `RepositoryLocator`.** `RepositoryLocator` is an `object` singleton that holds the Room `AppDatabase` and exposes lazy-initialized repositories. Call `RepositoryLocator.init(app)` from `Application.onCreate()` before accessing any repository. Replace with Hilt when ready.
 
-**Application class — `VolyMatcherApp`.** Extends `Application` and registered in `AndroidManifest.xml`. Calls `RepositoryLocator.init(this)` and launches a coroutine to `seedIfEmpty()`, which populates the DB from `SampleDataSource` on first install.
+**Application class — `VolyMatcherApp`.** Extends `Application` and registered in `AndroidManifest.xml`. Calls `RepositoryLocator.init(this)` on startup. DB seeding is not performed at runtime; `SampleDataSource` is used only in `@Preview` composables.
 
 **Hero-card pattern.** Sections with a dark background in either theme use `inverseSurface` / `inverseOnSurface` instead of a hardcoded dark color. In light mode these are `Ink` / `Paper`; in dark mode they are `DarkHeroBg` / `DarkOnSurface`.
 

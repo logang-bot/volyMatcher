@@ -22,7 +22,7 @@ Dependencies required: `navigation-compose` 2.8+ and `kotlin.plugin.serializatio
 | `MatchDetailRoute` | `data class` | `matchId: String` |
 | `TeamDetailRoute` | `data class` | `teamId: String` |
 | `PlayerProfileRoute` | `data class` | `playerId: String` |
-| `BodyScanRoute` | `data class` | `playerId: String` |
+| `BodyScanRoute` | `data class` | `playerId: String?` — null when scanning a new player |
 
 ---
 
@@ -34,15 +34,17 @@ HomeRoute  (bottom-nav root)
     │       ├─► MatchDetailRoute(matchId)
     │       └─► CreateMatchRoute
     ├─► PlayersRoute  (bottom-nav root)
+    │       ├─► BodyScanRoute(null)          ← new-player scan
     │       └─► PlayerProfileRoute(playerId)
     │               └─► BodyScanRoute(playerId)
     ├─► AutoBalanceRoute  (bottom-nav root — primary tab)
     ├─► StatsRoute  (bottom-nav root)
     │       └─► PlayerProfileRoute(playerId)
-    └─► TeamsRoute  (reached from HomeRoute quick-action)
-            └─► TeamDetailRoute(teamId)
-                    └─► PlayerProfileRoute(playerId)
-                            └─► BodyScanRoute(playerId)
+    ├─► TeamsRoute  (reached from HomeRoute quick-action)
+    │       └─► TeamDetailRoute(teamId)
+    │               └─► PlayerProfileRoute(playerId)
+    │                       └─► BodyScanRoute(playerId)
+    └─► BodyScanRoute(null)                  ← new-player scan from Home quick-action
 ```
 
 ---
@@ -58,6 +60,15 @@ val isBottomNavScreen = bottomNavTabs.any { isRouteActive(it.routeClass) }
 if (!isBottomNavScreen) return
 ```
 
+#### Visual design
+
+The bar is a rounded-pill `Row` (`RoundedCornerShape(22.dp)`) with a subtle `shadow(4.dp)` and `outlineVariant` border. A `Box` wraps the pill and the primary FAB together:
+
+- The pill has `padding(top = fabHalfSize)` so its top edge aligns with the FAB's center.
+- The primary FAB (`52.dp` circle) is positioned at `Alignment.TopCenter` of the outer Box, making it protrude above the bar.
+- The FAB's orange glow is rendered via `drawBehind` with four concentric semi-transparent circles — no `BlurMaskFilter` required, works on all API levels.
+- Regular tabs use `Icons.Rounded` (Home, GridView, Group, BarChart); the primary FAB uses `Icons.Rounded.Add`.
+
 ---
 
 ## Bottom-Nav Tabs (`Screen.kt`)
@@ -70,11 +81,11 @@ if (!isBottomNavScreen) return
 | Players | `PlayersRoute` | — |
 | Stats | `StatsRoute` | — |
 
-Tab navigation uses `saveState / restoreState` so each root's scroll position and VM state survive tab switches:
+Tab navigation uses `saveState / restoreState` so each root's scroll position and VM state survive tab switches. `popUpTo` uses the type-safe route object (not the numeric `.id`) to avoid ID resolution issues with serializable routes:
 
 ```kotlin
 navController.navigate(tab.routeInstance) {
-    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+    popUpTo(HomeRoute) { saveState = true }
     launchSingleTop = true
     restoreState = true
 }

@@ -120,12 +120,28 @@ data class BalancedTeams(
 
 ## SampleDataSource
 
-`data/source/SampleDataSource.kt` serves two purposes:
+`data/source/SampleDataSource.kt` is used exclusively for **`@Preview` data** — imported by `*Preview` composables so Android Studio can render screens without a running device.
 
-1. **@Preview data** — imported by `*Preview` composables so Android Studio can render screens without a running device.
-2. **First-launch DB seed** — `RepositoryLocator.seedIfEmpty()` checks if the players table is empty and, if so, inserts all sample players, matches, and teams. This runs once on install via `VolyMatcherApp.onCreate()`.
+`SampleDataSource` is **not** referenced by any `RepositoryImpl` and is **not** inserted into the Room database at runtime. The app operates entirely on data persisted via Room; screens that receive no data display empty states rather than fallback sample content.
 
-`SampleDataSource` is **not** referenced by any `RepositoryImpl`; it stays out of production data flows.
+#### Enabling first-launch seeding
+
+`RepositoryLocator` exposes a `seedIfEmpty()` suspend function that inserts all sample players, matches, and teams if the `players` table is empty. To activate it on first install, call it from `VolyMatcherApp.onCreate()`:
+
+```kotlin
+// VolyMatcherApp.kt
+override fun onCreate() {
+    super.onCreate()
+    RepositoryLocator.init(this)
+    CoroutineScope(Dispatchers.IO).launch {
+        RepositoryLocator.seedIfEmpty()
+    }
+}
+```
+
+Required import: `kotlinx.coroutines.CoroutineScope`, `kotlinx.coroutines.Dispatchers`, `kotlinx.coroutines.launch`.
+
+`seedIfEmpty()` is idempotent — it checks row count before inserting, so calling it on every launch is safe.
 
 ---
 

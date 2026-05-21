@@ -163,12 +163,16 @@
     <string name="scan_step">SCAN · STEP 2/3</string>
     <!-- %s = player name -->
     <string name="scan_instruction">%s · stand still</string>
+    <string name="scan_instruction_new">New player · stand still</string>
     <string name="scan_position">ARMS OUT · 2M FROM CAMERA</string>
     <string name="scan_capturing">● CAPTURING</string>
     <string name="scan_progress_label">SCANNING</string>
     <string name="scan_stats_label">CAPTURING</string>
     <string name="scan_scanning_value">scanning</string>
     <string name="scan_hold_steady">Hold steady…</string>
+    <string name="scan_permission_title">Camera access needed</string>
+    <string name="scan_permission_body">The scan uses your camera to measure height, wingspan and body composition in 30 seconds.</string>
+    <string name="scan_permission_action">Grant camera access</string>
 
     <!-- ── Player profile screen ──────────────────────────────────── -->
     <string name="profile_title">PROFILE</string>
