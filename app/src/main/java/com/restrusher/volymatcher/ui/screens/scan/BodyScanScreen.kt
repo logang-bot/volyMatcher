@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.mlkit.vision.pose.Pose
 import com.restrusher.volymatcher.R
 import com.restrusher.volymatcher.data.source.SampleDataSource
 import com.restrusher.volymatcher.ui.theme.VolyMatcherTheme
@@ -75,6 +76,7 @@ fun BodyScanScreen(
         uiState = uiState,
         hasCameraPermission = hasCameraPermission,
         onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+        onPoseResult = viewModel::onPoseResult,
         modifier = modifier,
         onBack = onBack,
     )
@@ -85,10 +87,12 @@ private fun BodyScanContent(
     uiState: BodyScanUiState,
     hasCameraPermission: Boolean,
     onRequestPermission: () -> Unit,
+    onPoseResult: (Pose, Int, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
     val player = uiState.player
+    val measurement = uiState.measurement
     val accentColor = MaterialTheme.colorScheme.primary
     val heroBg = MaterialTheme.colorScheme.inverseSurface
     val heroFg = MaterialTheme.colorScheme.inverseOnSurface
@@ -156,6 +160,8 @@ private fun BodyScanContent(
                     accentColor = accentColor,
                     heroFg = heroFg,
                     player = player,
+                    measurement = measurement,
+                    onPoseResult = onPoseResult,
                     modifier = viewportModifier,
                 )
             } else {
@@ -168,10 +174,11 @@ private fun BodyScanContent(
         }
 
         item {
+            val progress = (measurement.framesAnalyzed / 300f).coerceIn(0f, 1f)
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(stringResource(R.string.scan_progress_label), style = MaterialTheme.typography.labelMedium, color = heroFg.copy(alpha = 0.6f))
-                    Text("82%", style = MaterialTheme.typography.labelMedium, color = accentColor)
+                    Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelMedium, color = accentColor)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
@@ -183,7 +190,7 @@ private fun BodyScanContent(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.82f)
+                            .fillMaxWidth(progress)
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp))
                             .background(accentColor),
@@ -194,7 +201,7 @@ private fun BodyScanContent(
         }
 
         item {
-            ScanStatsGrid(player = player, accentColor = accentColor, heroFg = heroFg)
+            ScanStatsGrid(measurement = measurement, player = player, accentColor = accentColor, heroFg = heroFg)
             Spacer(modifier = Modifier.height(24.dp))
         }
 
@@ -226,6 +233,7 @@ private fun BodyScanLightPreview() {
             uiState = BodyScanUiState(player = SampleDataSource.players.first()),
             hasCameraPermission = false,
             onRequestPermission = {},
+            onPoseResult = { _, _, _, _ -> },
         )
     }
 }

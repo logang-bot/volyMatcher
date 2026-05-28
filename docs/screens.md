@@ -148,9 +148,9 @@ Player hero card with avatar (ring variant), all attributes as `StatBar` rows, r
 ### BodyScanScreen
 
 **Route:** `BodyScanRoute(playerId: String?)`  
-**Files:** `ui/screens/scan/` — `BodyScanScreen.kt`, `BodyScanViewModel.kt`, `CameraViewport.kt`, `CameraPermissionRequest.kt`, `ScanStatsGrid.kt`
+**Files:** `ui/screens/scan/` — `BodyScanScreen.kt`, `BodyScanViewModel.kt`, `CameraViewport.kt`, `CameraPermissionRequest.kt`, `ScanStatsGrid.kt`, `ScanMeasurement.kt`, `PoseAnalyzer.kt`
 
-Live camera body-scan screen. Uses CameraX (`PreviewView` inside `AndroidView`) for the camera feed, with Compose overlays drawn on top. No bottom bar.
+Live camera body-scan screen. Uses CameraX (`PreviewView` + `ImageAnalysis`) for the camera feed, runs ML Kit Pose Detection on each frame, and extracts physical measurements drawn as overlays. No bottom bar.
 
 | Callback | Navigates to |
 |---|---|
@@ -160,19 +160,39 @@ Live camera body-scan screen. Uses CameraX (`PreviewView` inside `AndroidView`) 
 
 `BodyScanScreen` checks `CAMERA` permission on composition and immediately launches the system dialog if not yet granted. The result is stored as `hasCameraPermission: Boolean` and threaded into `BodyScanContent`.
 
-- **Permission granted →** `CameraViewport` is shown. The back camera is bound to the lifecycle via a `DisposableEffect`; it unbinds automatically on disposal.
+- **Permission granted →** `CameraViewport` is shown. `Preview` + `ImageAnalysis` are both bound to the lifecycle in a single `DisposableEffect`; they unbind and the `PoseDetector`/executor are closed on disposal.
 - **Permission denied →** `CameraPermissionRequest` fills the viewport slot — explains the purpose of the camera and provides a "Grant camera access" button to re-trigger the dialog.
+
+#### Pose detection pipeline
+
+`PoseAnalyzer` implements `ImageAnalysis.Analyzer`. On each frame it calls `PoseDetector.process()` (ML Kit, `STREAM_MODE`) and forwards the result to `BodyScanViewModel.onPoseResult(pose, imageWidth, imageHeight, rotationDegrees)`.
+
+The ViewModel normalizes all landmark positions to viewport [0, 1] space (accounting for camera rotation) and computes:
+
+| Stat | Method |
+|---|---|
+| `height` | Head-top Y → lowest heel/foot Y, scaled by shoulder-width ruler |
+| `reach` | Left wrist X → right wrist X when arms are outstretched |
+| `jump` | Hip Y displacement above a 30-frame standing baseline |
+
+**Scale calibration:** average adult shoulder width (45 cm) in normalized pixel space serves as the ruler. All measurements derive from `value_norm / (shoulderWidthNorm / 45)`, making them distance-independent.
+
+`weight` and `hand` cannot be derived from pose — they are pre-filled from the existing `Player` if available, otherwise shown as "scanning" pending future user input.
 
 #### Composable breakdown
 
 | Composable | File | Role |
 |---|---|---|
 | `BodyScanScreen` | `BodyScanScreen.kt` | Entry point; manages permission state |
-| `BodyScanContent` | `BodyScanScreen.kt` | Orchestrates the full-screen `LazyColumn` layout |
-| `CameraViewport` | `CameraViewport.kt` | Camera preview + all scan overlays (grid, silhouette, scan line, corner brackets, live readouts) |
+| `BodyScanContent` | `BodyScanScreen.kt` | Orchestrates the full-screen `LazyColumn` layout; wires `onPoseResult` and live progress |
+| `CameraViewport` | `CameraViewport.kt` | Camera preview + `ImageAnalysis` binding + scan overlays (grid, animated scan line, corner brackets, live readouts) |
+| `PoseSkeletonOverlay` | `CameraViewport.kt` | Canvas overlay drawing detected skeleton joints and bones; replaces static silhouette once a person is detected |
+| `BodySilhouetteOverlay` | `CameraViewport.kt` | Static guide silhouette shown before a person is detected |
 | `CameraPermissionRequest` | `CameraPermissionRequest.kt` | Rationale card shown when permission is denied |
-| `ScanStatsGrid` | `ScanStatsGrid.kt` | 2-column grid of captured stat cards below the viewport |
+| `ScanStatsGrid` | `ScanStatsGrid.kt` | 2-column grid; cards flip to confirmed (✓) as each measurement is captured live |
+| `PoseAnalyzer` | `PoseAnalyzer.kt` | `ImageAnalysis.Analyzer` — feeds frames to ML Kit `PoseDetector` |
+| `ScanMeasurement` | `ScanMeasurement.kt` | `NormalizedLandmark` + `ScanMeasurement` data classes held in `BodyScanUiState` |
 
 #### `playerId` semantics
 
-`playerId` is `String?`. When `null` (entry from Home or Players quick-action) the scan starts with no pre-loaded player — all stat cards display "scanning". When non-null (entry from `PlayerProfileScreen`) the ViewModel fetches the existing player and pre-fills the stat overlays and grid.
+`playerId` is `String?`. When `null` (entry from Home or Players quick-action) the scan starts with no pre-loaded player — `weight` and `hand` cards display "scanning". When non-null (entry from `PlayerProfileScreen`) the ViewModel fetches the existing player and pre-fills those two cards; the camera-derived stats (`height`, `reach`, `jump`) are always captured fresh.

@@ -11,6 +11,7 @@
 | Serialization | `kotlin.plugin.serialization` (same version as Kotlin) |
 | Local DB | Room 2.7.0 (entities, DAOs, `@Upsert`) |
 | Camera | CameraX 1.4.0 (`camera-core`, `camera-camera2`, `camera-lifecycle`, `camera-view`) |
+| Pose detection | ML Kit Pose Detection 18.0.0-beta5 (`com.google.mlkit:pose-detection`) |
 | Annotation processing | KSP 2.2.21-2.0.5 (replaces KAPT for Room) |
 | Min SDK | 24 · Target/Compile SDK 36 |
 
@@ -112,10 +113,12 @@ com.restrusher.volymatcher
 │   │   │   └── StatsViewModel.kt
 │   │   └── scan/
 │   │       ├── BodyScanScreen.kt
-│   │       ├── BodyScanViewModel.kt
-│   │       ├── CameraViewport.kt        — live camera preview + scan overlays
+│   │       ├── BodyScanViewModel.kt     — pose processing, measurement computation
+│   │       ├── CameraViewport.kt        — live camera preview + scan overlays + skeleton
 │   │       ├── CameraPermissionRequest.kt — permission rationale + grant button
-│   │       └── ScanStatsGrid.kt         — captured-stats card grid
+│   │       ├── ScanStatsGrid.kt         — live-updating captured-stats card grid
+│   │       ├── ScanMeasurement.kt       — NormalizedLandmark + ScanMeasurement data classes
+│   │       └── PoseAnalyzer.kt          — ImageAnalysis.Analyzer wrapping PoseDetector
 │   └── theme/
 │       ├── Color.kt        — palette constants
 │       ├── Theme.kt        — light + dark MaterialTheme color schemes

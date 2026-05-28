@@ -27,6 +27,7 @@ import com.restrusher.volymatcher.domain.model.Player
 
 @Composable
 fun ScanStatsGrid(
+    measurement: ScanMeasurement,
     player: Player?,
     accentColor: Color,
     heroFg: Color,
@@ -34,12 +35,12 @@ fun ScanStatsGrid(
 ) {
     val scanning = stringResource(R.string.scan_scanning_value)
     val stats = listOf(
-        Triple(stringResource(R.string.stat_height),   player?.height?.let { "$it cm" } ?: scanning, player != null),
-        Triple(stringResource(R.string.stat_weight),   player?.weight?.let { "$it kg" } ?: scanning, player != null),
-        Triple(stringResource(R.string.stat_wingspan), player?.reach?.let { "$it cm" }  ?: scanning, player != null),
-        Triple(stringResource(R.string.stat_vert_jump), "…", false),
-        Triple(stringResource(R.string.stat_body_comp), scanning, false),
-        Triple(stringResource(R.string.stat_hand),     player?.hand ?: scanning, player != null),
+        Triple(stringResource(R.string.stat_height),    measurement.heightCm?.let { "$it cm" } ?: scanning,  measurement.heightCm != null),
+        Triple(stringResource(R.string.stat_weight),    player?.weight?.let { "$it kg" } ?: scanning,         player != null),
+        Triple(stringResource(R.string.stat_wingspan),  measurement.reachCm?.let { "$it cm" } ?: scanning,   measurement.reachCm != null),
+        Triple(stringResource(R.string.stat_vert_jump), measurement.jumpCm?.let { "$it cm" } ?: "…",         measurement.jumpCm != null),
+        Triple(stringResource(R.string.stat_body_comp), scanning,                                              false),
+        Triple(stringResource(R.string.stat_hand),      player?.hand ?: scanning,                             player != null),
     )
 
     Column(modifier = modifier.padding(horizontal = 20.dp)) {
